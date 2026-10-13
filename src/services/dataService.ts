@@ -28,6 +28,18 @@ const initialProfiles: Profile[] = [
     updated_at: '2026-10-01T08:00:00Z'
   },
   {
+    id: 'usr-student-02',
+    email: 'sinhvien2@edumate.vn',
+    full_name: 'Lê Thị Bình',
+    phone: '0933221100',
+    student_code: 'SV2026-1044',
+    role: 'student',
+    status: 'active',
+    avatar_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200',
+    created_at: '2026-10-03T08:00:00Z',
+    updated_at: '2026-10-03T08:00:00Z'
+  },
+  {
     id: 'usr-manager-01',
     email: 'quanly@edumate.vn',
     full_name: 'Trần Thị Mai (Trưởng ban Giáo vụ)',
@@ -113,6 +125,24 @@ const initialRequests: ServiceRequest[] = [
     reviewed_at: '2026-10-11T09:15:00Z',
     created_at: '2026-10-08T10:00:00Z',
     updated_at: '2026-10-11T09:15:00Z'
+  },
+  {
+    id: 'req-103',
+    request_code: 'REQ-2026-003',
+    student_id: 'usr-student-02',
+    form_type_id: 'form-02',
+    form_type_title: 'Phiếu yêu cầu Cố vấn & Hỗ trợ học vụ chuyên sâu',
+    student_name: 'Lê Thị Bình',
+    student_email: 'sinhvien2@edumate.vn',
+    student_code: 'SV2026-1044',
+    form_data: {
+      hoc_phan: 'Toán cao cấp & Thống kê ứng dụng',
+      noi_dung_can_ho_tro: 'Cần trợ giảng hướng dẫn phần phương sai và kiểm định giả thuyết',
+      khung_gio_ranh: 'Chiều thứ 4 hàng tuần'
+    },
+    status: 'submitted',
+    created_at: '2026-10-12T16:00:00Z',
+    updated_at: '2026-10-12T16:00:00Z'
   }
 ];
 

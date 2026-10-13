@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import type { UserRole, Profile } from '../types';
 import { dataService } from '../services/dataService';
 import { 
+  isSupabaseConfigured, 
+  supabaseSignIn, 
+  supabaseSignUp, 
+  supabaseFetchProfile 
+} from '../lib/supabase';
+import { 
   Lock, 
   Mail, 
   User, 
@@ -12,6 +18,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+
 
 interface AuthPageProps {
   onLoginSuccess: (profile: Profile) => void;
@@ -76,26 +83,84 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setLoading(true);
 
+    if (isSupabaseConfigured) {
+      try {
+        if (mode === 'login') {
+          const authRes = await supabaseSignIn(email.trim(), password);
+          if (authRes?.user) {
+            const profile = await supabaseFetchProfile(authRes.user.id);
+            setLoading(false);
+            if (profile) {
+              showToast('success', 'Đăng nhập Supabase Auth thành công!', `Chào mừng ${profile.full_name}`);
+              onLoginSuccess(profile);
+            } else {
+              // Profile might be in sync process
+              const fallbackProfile: Profile = {
+                id: authRes.user.id,
+                email: authRes.user.email || email,
+                full_name: authRes.user.user_metadata?.full_name || email.split('@')[0],
+                role: 'student',
+                status: 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              };
+              showToast('success', 'Đăng nhập thành công!', `Chào mừng ${fallbackProfile.full_name}`);
+              onLoginSuccess(fallbackProfile);
+            }
+          }
+        } else {
+          // Register via Supabase Auth
+          const authRes = await supabaseSignUp(
+            email.trim(),
+            password,
+            fullName.trim(),
+            role === 'student' ? studentCode.trim() : undefined,
+            phone.trim() || undefined
+          );
+
+          setLoading(false);
+          if (authRes?.user) {
+            if (authRes.session) {
+              const profile = await supabaseFetchProfile(authRes.user.id);
+              if (profile) {
+                showToast('success', 'Đăng ký thành công!', `Chào mừng ${profile.full_name}`);
+                onLoginSuccess(profile);
+                return;
+              }
+            }
+            showToast('info', 'Đăng ký thành công!', 'Tài khoản đã tạo trên Supabase. Bạn có thể đăng nhập ngay.');
+            setMode('login');
+          }
+        }
+      } catch (err: any) {
+        setLoading(false);
+        const errMsg = err?.message || 'Lỗi xử lý xác thực Supabase';
+        setErrors({ form: errMsg });
+        showToast('error', 'Lỗi xác thực Supabase', errMsg);
+      }
+      return;
+    }
+
+    // Chế độ Sandbox / Local fallback khi chưa cấu hình .env
     setTimeout(() => {
       setLoading(false);
       if (mode === 'login') {
         const profiles = dataService.getProfiles();
         const found = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
         if (found) {
-          showToast('success', 'Đăng nhập thành công!', `Chào mừng ${found.full_name}`);
+          showToast('success', 'Đăng nhập thành công (Sandbox)!', `Chào mừng ${found.full_name}`);
           onLoginSuccess(found);
         } else {
           setErrors({ form: 'Email hoặc mật khẩu không chính xác trong dữ liệu lưu trữ!' });
           showToast('error', 'Đăng nhập thất bại', 'Email không tồn tại trong danh sách tài khoản');
         }
       } else {
-        // Register new user
         const existing = dataService.getProfiles().some(p => p.email.toLowerCase() === email.toLowerCase());
         if (existing) {
           setErrors({ email: 'Địa chỉ email này đã được sử dụng!' });
@@ -113,11 +178,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
           avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200'
         });
 
-        showToast('success', 'Tạo tài khoản thành công!', `Chào mừng ${newProfile.full_name} tham gia EduMate`);
+        showToast('success', 'Tạo tài khoản thành công (Sandbox)!', `Chào mừng ${newProfile.full_name}`);
         onLoginSuccess(newProfile);
       }
-    }, 600);
+    }, 400);
   };
+
 
   return (
     <div className="max-w-md mx-auto pt-4 pb-12 animate-fadeIn">
@@ -312,14 +378,23 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
           <div className="text-[11px] text-slate-400 font-semibold text-center">
             Tài khoản dùng thử nghiệm có sẵn:
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-3 gap-2 text-xs">
             <button
               type="button"
               onClick={() => handleQuickLogin('sinhvien@edumate.vn')}
               className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer"
             >
-              <div className="text-[10px] text-emerald-400 font-bold uppercase">Sinh viên mẫu</div>
-              <div className="font-semibold truncate">Nguyễn Văn An</div>
+              <div className="text-[9px] text-emerald-400 font-bold uppercase">Sinh viên 1</div>
+              <div className="font-semibold truncate text-[11px]">Văn An</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('sinhvien2@edumate.vn')}
+              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer"
+            >
+              <div className="text-[9px] text-teal-400 font-bold uppercase">Sinh viên 2</div>
+              <div className="font-semibold truncate text-[11px]">Thị Bình</div>
             </button>
 
             <button
@@ -327,8 +402,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
               onClick={() => handleQuickLogin('quanly@edumate.vn')}
               className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer"
             >
-              <div className="text-[10px] text-indigo-400 font-bold uppercase">Quản lý mẫu</div>
-              <div className="font-semibold truncate">Trần Thị Mai</div>
+              <div className="text-[9px] text-indigo-400 font-bold uppercase">Quản lý</div>
+              <div className="font-semibold truncate text-[11px]">Thị Mai</div>
             </button>
           </div>
 

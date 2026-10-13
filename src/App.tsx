@@ -1,10 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import type { UserRole, Profile } from './types';
 import { dataService } from './services/dataService';
+import { 
+  isSupabaseConfigured, 
+  supabaseGetSession, 
+  supabaseFetchProfile, 
+  supabaseSignOut, 
+  supabase 
+} from './lib/supabase';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer, type ToastMessage, type ToastType } from './components/common/Toast';
+
 
 // 8 Pages
 import { HomePage } from './pages/HomePage';
@@ -23,6 +31,40 @@ export function App() {
     const profiles = dataService.getProfiles();
     return profiles.find(p => p.role === 'student') || profiles[0] || null;
   });
+
+  // Khôi phục trạng thái phiên làm việc khi tải ứng dụng (Supabase Auth Session Restore)
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    // 1. Kiểm tra session hiện có
+    supabaseGetSession().then(async (session) => {
+      if (session?.user) {
+        const profile = await supabaseFetchProfile(session.user.id);
+        if (profile) {
+          setCurrentUser(profile);
+          setCurrentRole(profile.role);
+          showToast('info', 'Phiên làm việc đã khôi phục', `Đã đồng bộ tài khoản: ${profile.full_name}`);
+        }
+      }
+    });
+
+    // 2. Lắng nghe thay đổi trạng thái xác thực
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const profile = await supabaseFetchProfile(session.user.id);
+        if (profile) {
+          setCurrentUser(profile);
+          setCurrentRole(profile.role);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
 
   // Global Toast System
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -72,11 +114,19 @@ export function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured) {
+      try {
+        await supabaseSignOut();
+      } catch (err: any) {
+        console.warn('Lỗi đăng xuất:', err.message);
+      }
+    }
     setCurrentUser(null);
     setCurrentPage('home');
     showToast('info', 'Đã đăng xuất', 'Bạn hiện đang xem hệ thống với tư cách Khách');
   };
+
 
   const handleProfileUpdated = (updated: Profile) => {
     setCurrentUser(updated);
