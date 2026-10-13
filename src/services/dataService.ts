@@ -264,6 +264,51 @@ class DataStore {
     return this.get('profiles', initialProfiles);
   }
 
+  updateProfile(id: string, updates: Partial<Profile>): Profile | null {
+    const profiles = this.getProfiles();
+    const idx = profiles.findIndex(p => p.id === id);
+    if (idx === -1) return null;
+
+    profiles[idx] = {
+      ...profiles[idx],
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+    this.set('profiles', profiles);
+    return profiles[idx];
+  }
+
+  registerProfile(newProfileData: Omit<Profile, 'id' | 'created_at' | 'updated_at'>): Profile {
+    const profiles = this.getProfiles();
+    const newProfile: Profile = {
+      ...newProfileData,
+      id: `usr-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    profiles.push(newProfile);
+    this.set('profiles', profiles);
+    return newProfile;
+  }
+
+  cancelRequest(requestId: string, studentId: string): boolean {
+    const requests = this.getRequests();
+    const idx = requests.findIndex(r => r.id === requestId && r.student_id === studentId);
+    if (idx === -1) return false;
+
+    // Only allow cancelling draft or submitted requests
+    if (!['draft', 'submitted'].includes(requests[idx].status)) {
+      return false;
+    }
+
+    requests[idx].status = 'cancelled';
+    requests[idx].updated_at = new Date().toISOString();
+    this.set('requests', requests);
+    this.logAction('service_requests', requestId, 'UPDATE', studentId, requests[idx].student_name, null, requests[idx]);
+    return true;
+  }
+
+
   // Forms
   getServiceForms(): ServiceForm[] {
     return this.get('forms', initialForms);

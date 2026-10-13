@@ -1,107 +1,238 @@
 import { useState } from 'react';
+
 import type { UserRole, Profile } from './types';
 import { dataService } from './services/dataService';
-import { Navbar } from './components/Navbar';
-import { StudentView } from './features/student/StudentView';
-import { ManagerView } from './features/manager/ManagerView';
+import { Header } from './components/layout/Header';
+import { Footer } from './components/layout/Footer';
+import { ToastContainer, type ToastMessage, type ToastType } from './components/common/Toast';
 
+// 8 Pages
+import { HomePage } from './pages/HomePage';
+import { AuthPage } from './pages/AuthPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { SubmitRequestPage } from './pages/SubmitRequestPage';
+import { MyRequestsPage } from './pages/MyRequestsPage';
+import { AcademicPage } from './pages/AcademicPage';
+import { OrdersPage } from './pages/OrdersPage';
+import { AdminPage } from './pages/AdminPage';
 
 export function App() {
+  const [currentPage, setCurrentPage] = useState<string>('home');
   const [currentRole, setCurrentRole] = useState<UserRole>('student');
-  const [activeTab, setActiveTab] = useState<string>('my-requests');
+  const [currentUser, setCurrentUser] = useState<Profile | null>(() => {
+    const profiles = dataService.getProfiles();
+    return profiles.find(p => p.role === 'student') || profiles[0] || null;
+  });
 
-  // Load current profile based on role
-  const profiles = dataService.getProfiles();
-  const currentProfile: Profile = 
-    profiles.find(p => p.role === currentRole) || profiles[0];
+  // Global Toast System
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  const showToast = (type: ToastType, title: string, message?: string) => {
+    const newToast: ToastMessage = {
+      id: `toast-${Date.now()}-${Math.random()}`,
+      type,
+      title,
+      message,
+    };
+    setToasts((prev) => [...prev, newToast]);
+  };
+
+  const handleDismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  // Switch role handler: Automatically syncs with a profile matching that role
   const handleSwitchRole = (newRole: UserRole) => {
     setCurrentRole(newRole);
-    if (newRole === 'student') {
-      setActiveTab('my-requests');
+    const profiles = dataService.getProfiles();
+    const matchingProfile = profiles.find(p => p.role === newRole) || profiles[0];
+    setCurrentUser(matchingProfile);
+
+    // Contextual redirection
+    if (newRole === 'manager') {
+      if (['submit-request', 'my-requests', 'orders'].includes(currentPage)) {
+        setCurrentPage('admin');
+      }
+      showToast('info', 'Đã chuyển sang vai trò Quản lý', `Tài khoản: ${matchingProfile.full_name}`);
     } else {
-      setActiveTab('dashboard');
+      if (currentPage === 'admin') {
+        setCurrentPage('home');
+      }
+      showToast('info', 'Đã chuyển sang vai trò Người học', `Tài khoản: ${matchingProfile.full_name}`);
+    }
+  };
+
+  const handleLoginSuccess = (profile: Profile) => {
+    setCurrentUser(profile);
+    setCurrentRole(profile.role);
+    if (profile.role === 'manager') {
+      setCurrentPage('admin');
+    } else {
+      setCurrentPage('home');
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setCurrentPage('home');
+    showToast('info', 'Đã đăng xuất', 'Bạn hiện đang xem hệ thống với tư cách Khách');
+  };
+
+  const handleProfileUpdated = (updated: Profile) => {
+    setCurrentUser(updated);
+  };
+
+  // Render the current active page
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'home':
+        return <HomePage onNavigate={setCurrentPage} currentRole={currentRole} />;
+
+      case 'auth':
+        return (
+          <AuthPage
+            onLoginSuccess={handleLoginSuccess}
+            onNavigate={setCurrentPage}
+            showToast={showToast}
+          />
+        );
+
+      case 'profile':
+        if (!currentUser) {
+          return (
+            <AuthPage
+              onLoginSuccess={handleLoginSuccess}
+              onNavigate={setCurrentPage}
+              showToast={showToast}
+            />
+          );
+        }
+        return (
+          <ProfilePage
+            currentUser={currentUser}
+            onProfileUpdated={handleProfileUpdated}
+            onNavigate={setCurrentPage}
+            showToast={showToast}
+          />
+        );
+
+      case 'submit-request':
+        if (!currentUser) {
+          return (
+            <AuthPage
+              onLoginSuccess={handleLoginSuccess}
+              onNavigate={setCurrentPage}
+              showToast={showToast}
+            />
+          );
+        }
+        return (
+          <SubmitRequestPage
+            currentUser={currentUser}
+            onNavigate={setCurrentPage}
+            showToast={showToast}
+          />
+        );
+
+      case 'my-requests':
+        if (!currentUser) {
+          return (
+            <AuthPage
+              onLoginSuccess={handleLoginSuccess}
+              onNavigate={setCurrentPage}
+              showToast={showToast}
+            />
+          );
+        }
+        return (
+          <MyRequestsPage
+            currentUser={currentUser}
+            onNavigate={setCurrentPage}
+            showToast={showToast}
+          />
+        );
+
+      case 'academic':
+        return (
+          <AcademicPage
+            currentUser={currentUser}
+            currentRole={currentRole}
+            onNavigate={setCurrentPage}
+            showToast={showToast}
+          />
+        );
+
+      case 'orders':
+        if (!currentUser) {
+          return (
+            <AuthPage
+              onLoginSuccess={handleLoginSuccess}
+              onNavigate={setCurrentPage}
+              showToast={showToast}
+            />
+          );
+        }
+        return (
+          <OrdersPage
+            currentUser={currentUser}
+            onNavigate={setCurrentPage}
+            showToast={showToast}
+          />
+        );
+
+      case 'admin':
+        if (!currentUser || currentRole !== 'manager') {
+          return (
+            <div className="max-w-md mx-auto text-center py-16 space-y-4">
+              <div className="text-4xl">🛡️</div>
+              <h2 className="text-lg font-bold text-white">Yêu cầu quyền Người quản lý</h2>
+              <p className="text-xs text-slate-400">
+                Khu vực này chỉ dành cho Ban Quản trị Giáo vụ. Vui lòng chuyển đổi vai trò ở thanh tiêu đề sang "Quản lý".
+              </p>
+              <button
+                onClick={() => handleSwitchRole('manager')}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all"
+              >
+                Chuyển sang vai trò Quản lý
+              </button>
+            </div>
+          );
+        }
+        return (
+          <AdminPage
+            currentUser={currentUser}
+            onNavigate={setCurrentPage}
+            showToast={showToast}
+          />
+        );
+
+      default:
+        return <HomePage onNavigate={setCurrentPage} currentRole={currentRole} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
-      {/* Top Navigation */}
-      <Navbar
+      {/* Toast Notification Container */}
+      <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
+
+      {/* Top Universal Header */}
+      <Header
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        currentUser={currentUser}
         currentRole={currentRole}
-        currentProfile={currentProfile}
         onSwitchRole={handleSwitchRole}
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onLogout={handleLogout}
       />
 
-      {/* Main Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Role Notice Banner */}
-        <div className="mb-8 p-4 rounded-2xl glass-panel border border-indigo-500/20 bg-gradient-to-r from-indigo-950/30 via-slate-900/40 to-purple-950/30 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center space-x-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shadow-md ${
-              currentRole === 'student' ? 'bg-emerald-600' : 'bg-indigo-600'
-            }`}>
-              {currentRole === 'student' ? 'SV' : 'QL'}
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-white flex items-center space-x-2">
-                <span>Bạn đang trải nghiệm với vai trò:</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  currentRole === 'student' 
-                    ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' 
-                    : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30'
-                }`}>
-                  {currentRole === 'student' ? 'Sinh viên / Người học (Nguyễn Văn An)' : 'Ban Quản trị / Giáo vụ (Trần Thị Mai)'}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {currentRole === 'student' 
-                  ? 'Giao diện cho phép tạo biểu mẫu, xem tiến độ duyệt, đăng ký học phần và nộp biên lai thanh toán.'
-                  : 'Giao diện quản trị cho phép tiếp nhận hồ sơ, duyệt/từ chối kèm lý do, quản lý dữ liệu học tập và đối soát đơn hàng.'
-                }
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 text-xs text-slate-400 self-end md:self-auto">
-            <span className="hidden sm:inline">Thử chuyển vai trò ở góc trên bên phải</span>
-            <span className="text-indigo-400 font-bold">↗</span>
-          </div>
-        </div>
-
-        {/* Dynamic View rendering based on current role */}
-        {currentRole === 'student' ? (
-          <StudentView 
-            currentProfile={currentProfile} 
-            activeTab={activeTab} 
-          />
-        ) : (
-          <ManagerView 
-            currentProfile={currentProfile} 
-            activeTab={activeTab} 
-          />
-        )}
-
+      {/* Main Content View */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {renderPage()}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/90 py-6 mt-12 text-center text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <span className="font-semibold text-slate-300">EduMate Platform Core</span>
-            <span>•</span>
-            <span>React + TypeScript + Vite + Tailwind CSS + Supabase BaaS</span>
-          </div>
-          <div className="flex items-center space-x-4 text-slate-400">
-            <span>Thiết kế theo chuẩn bảo mật PostgreSQL RLS</span>
-            <span>•</span>
-            <span className="text-indigo-400 font-medium">Bảo mật cấp dòng dữ liệu (Row-Level Security)</span>
-          </div>
-        </div>
-      </footer>
+      {/* Universal Footer */}
+      <Footer onNavigate={setCurrentPage} />
     </div>
   );
 }
