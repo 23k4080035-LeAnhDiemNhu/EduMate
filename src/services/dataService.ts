@@ -1,5 +1,6 @@
 import type { 
   Profile, 
+  UserRole,
   ServiceForm, 
   ServiceRequest, 
   AcademicItem, 
@@ -294,17 +295,52 @@ class DataStore {
     return this.get('profiles', initialProfiles);
   }
 
-  updateProfile(id: string, updates: Partial<Profile>): Profile | null {
+  getProfileById(id: string): Profile | null {
+    const profiles = this.getProfiles();
+    return profiles.find(p => p.id === id) || null;
+  }
+
+  updateProfile(id: string, updates: Partial<Profile>, callerId?: string): Profile | null {
+    // Security check: caller can only update their own profile unless manager/admin
+    if (callerId && callerId !== id) {
+      const caller = this.getProfileById(callerId);
+      if (!caller || !['manager', 'admin'].includes(caller.role)) {
+        throw new Error('UNAUTHORIZED: Bạn chỉ có thể cập nhật hồ sơ cá nhân của chính mình.');
+      }
+    }
+
     const profiles = this.getProfiles();
     const idx = profiles.findIndex(p => p.id === id);
     if (idx === -1) return null;
 
+    // Validation: full_name
+    if (updates.full_name !== undefined) {
+      const trimmed = updates.full_name.trim();
+      if (!trimmed || trimmed.length < 2) {
+        throw new Error('VALIDATION ERROR: Họ và tên không được để trống và phải có ít nhất 2 ký tự.');
+      }
+    }
+
+    // Validation: phone
+    if (updates.phone !== undefined && updates.phone.trim() !== '') {
+      const cleaned = updates.phone.replace(/[\s-]/g, '');
+      if (!/^[0-9]{9,11}$/.test(cleaned)) {
+        throw new Error('VALIDATION ERROR: Số điện thoại không hợp lệ (cần từ 9 đến 11 chữ số).');
+      }
+    }
+
+    // Security check: Stripping protected columns to prevent privilege escalation
+    // role and status can never be changed via profile update
+    const { role: _role, status: _status, id: _id, email: _email, ...allowedUpdates } = updates;
+
+    const old = { ...profiles[idx] };
     profiles[idx] = {
       ...profiles[idx],
-      ...updates,
+      ...allowedUpdates,
       updated_at: new Date().toISOString()
     };
     this.set('profiles', profiles);
+    this.logAction('profiles', id, 'UPDATE', callerId || id, profiles[idx].full_name, old, profiles[idx]);
     return profiles[idx];
   }
 
@@ -323,21 +359,31 @@ class DataStore {
 
   cancelRequest(requestId: string, studentId: string): boolean {
     const requests = this.getRequests();
-    const idx = requests.findIndex(r => r.id === requestId && r.student_id === studentId);
-    if (idx === -1) return false;
+    const idx = requests.findIndex(r => r.id === requestId);
+    if (idx === -1) {
+      throw new Error('NOT FOUND: Không tìm thấy yêu cầu.');
+    }
+
+    // Data isolation / ownership check
+    if (requests[idx].student_id !== studentId) {
+      throw new Error('UNAUTHORIZED: Bạn không có quyền hủy yêu cầu của sinh viên khác.');
+    }
 
     // Only allow cancelling draft or submitted requests
     if (!['draft', 'submitted'].includes(requests[idx].status)) {
-      return false;
+      throw new Error(`BUSINESS RULE VIOLATION: Không thể hủy hồ sơ khi đã ở trạng thái '${requests[idx].status}'. Chỉ cho phép hủy khi đang ở trạng thái Nháp (Draft) hoặc Chờ xử lý (Submitted).`);
     }
 
-    requests[idx].status = 'cancelled';
-    requests[idx].updated_at = new Date().toISOString();
+    const old = { ...requests[idx] };
+    requests[idx] = {
+      ...requests[idx],
+      status: 'cancelled',
+      updated_at: new Date().toISOString()
+    };
     this.set('requests', requests);
-    this.logAction('service_requests', requestId, 'UPDATE', studentId, requests[idx].student_name, null, requests[idx]);
+    this.logAction('service_requests', requestId, 'UPDATE', studentId, requests[idx].student_name, old, requests[idx]);
     return true;
   }
-
 
   // Forms
   getServiceForms(): ServiceForm[] {
@@ -345,17 +391,53 @@ class DataStore {
   }
 
   // Requests
-  getRequests(): ServiceRequest[] {
-    return this.get('requests', initialRequests);
+  getRequests(userId?: string, role?: UserRole): ServiceRequest[] {
+    const list = this.get('requests', initialRequests);
+    if (role === 'student' && userId) {
+      return list.filter(r => r.student_id === userId);
+    }
+    return list;
   }
 
   createRequest(data: Omit<ServiceRequest, 'id' | 'request_code' | 'created_at' | 'updated_at'>): ServiceRequest {
+    // Security check: Initial status must only be draft or submitted
+    if (!['draft', 'submitted'].includes(data.status)) {
+      throw new Error(`RLS / SECURITY VIOLATION: Sinh viên không được phép tự khởi tạo yêu cầu với trạng thái '${data.status}'.`);
+    }
+
+    // Security check: Reviewer cannot be assigned by student
+    if (data.reviewer_id || data.reviewed_at) {
+      throw new Error('RLS / SECURITY VIOLATION: Sinh viên không thể tự gán người thẩm định hoặc thời điểm thẩm định.');
+    }
+
+    // Business validation: if submitted, reason must be at least 10 characters
+    const reason = data.form_data?.ly_do_noi_dung || data.form_data?.ly_do || '';
+    if (data.status === 'submitted' && (!reason || String(reason).trim().length < 10)) {
+      throw new Error('VALIDATION ERROR: Lý do / nội dung yêu cầu phải có tối thiểu 10 ký tự.');
+    }
+
+    // Duplicate check: prevent rapid double-clicks (within 2 seconds with identical payload)
     const requests = this.getRequests();
+    const now = Date.now();
+    const recentDuplicate = requests.find(r => 
+      r.student_id === data.student_id &&
+      r.form_type_id === data.form_type_id &&
+      r.status === data.status &&
+      (now - new Date(r.created_at).getTime()) < 2000
+    );
+    if (recentDuplicate) {
+      throw new Error('SPAM PREVENTION: Yêu cầu tương tự vừa được gửi. Vui lòng đợi trong giây lát để tránh gửi lặp.');
+    }
+
     const count = requests.length + 1;
     const newReq: ServiceRequest = {
       ...data,
-      id: `req-${Date.now()}`,
+      id: `req-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       request_code: `REQ-2026-${String(count).padStart(3, '0')}`,
+      reviewer_id: undefined,
+      reviewer_name: undefined,
+      review_notes: undefined,
+      reviewed_at: undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -372,9 +454,33 @@ class DataStore {
     reviewerName: string, 
     notes?: string
   ): ServiceRequest | null {
+    // Security check: Reviewer must be manager or admin
+    const reviewer = this.getProfileById(reviewerId);
+    if (!reviewer || !['manager', 'admin'].includes(reviewer.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền duyệt hoặc từ chối yêu cầu.');
+    }
+
+    // Business validation: Approved statuses only
+    const validStatuses: RequestStatus[] = ['in_review', 'approved', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      throw new Error(`BUSINESS RULE VIOLATION: Trạng thái thẩm định không hợp lệ: '${status}'.`);
+    }
+
+    // Check constraint: rejected status requires non-empty review_notes
+    if (status === 'rejected' && (!notes || notes.trim().length === 0)) {
+      throw new Error('VALIDATION ERROR: Bắt buộc phải có lý do/ghi chú khi từ chối hồ sơ (Ràng buộc toàn vẹn chk_review_notes_on_reject).');
+    }
+
     const requests = this.getRequests();
     const idx = requests.findIndex(r => r.id === requestId);
-    if (idx === -1) return null;
+    if (idx === -1) {
+      throw new Error('NOT FOUND: Không tìm thấy yêu cầu.');
+    }
+
+    // Transition validation: cannot review already cancelled request
+    if (requests[idx].status === 'cancelled') {
+      throw new Error('BUSINESS RULE VIOLATION: Không thể xử lý hồ sơ đã bị người học hủy bỏ.');
+    }
 
     const old = { ...requests[idx] };
     requests[idx] = {
@@ -382,7 +488,7 @@ class DataStore {
       status,
       reviewer_id: reviewerId,
       reviewer_name: reviewerName,
-      review_notes: notes || requests[idx].review_notes,
+      review_notes: notes ? notes.trim() : requests[idx].review_notes,
       reviewed_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -429,8 +535,12 @@ class DataStore {
   }
 
   // Enrollments
-  getEnrollments(): Enrollment[] {
-    return this.get('enrollments', initialEnrollments);
+  getEnrollments(userId?: string, role?: UserRole): Enrollment[] {
+    const list = this.get('enrollments', initialEnrollments);
+    if (role === 'student' && userId) {
+      return list.filter(e => e.student_id === userId);
+    }
+    return list;
   }
 
   enrollStudent(studentId: string, academicItemId: string, itemTitle: string): Enrollment {
@@ -450,8 +560,12 @@ class DataStore {
   }
 
   // Orders
-  getOrders(): Order[] {
-    return this.get('orders', initialOrders);
+  getOrders(userId?: string, role?: UserRole): Order[] {
+    const list = this.get('orders', initialOrders);
+    if (role === 'student' && userId) {
+      return list.filter(o => o.student_id === userId);
+    }
+    return list;
   }
 
   updateOrderStatus(orderId: string, status: OrderStatus, managerId: string, managerName: string): Order | null {

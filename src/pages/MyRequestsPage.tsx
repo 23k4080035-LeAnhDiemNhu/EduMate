@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Profile, ServiceRequest } from '../types';
 import { dataService } from '../services/dataService';
+import { isSupabaseConfigured, supabaseFetchRequests, supabaseCancelRequest } from '../lib/supabase';
 import { RequestBadge } from '../components/common/Badge';
 import { EmptyState } from '../components/common/EmptyState';
 import { 
@@ -10,7 +11,8 @@ import {
   Calendar, 
   AlertCircle, 
   Ban, 
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 
 
@@ -28,17 +30,27 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-  const loadRequests = () => {
-    const list = dataService.getRequests().filter(r => r.student_id === currentUser.id);
-    setRequests(list);
+  const loadRequests = async () => {
+    try {
+      if (isSupabaseConfigured) {
+        const list = await supabaseFetchRequests();
+        setRequests(list);
+      } else {
+        const list = dataService.getRequests(currentUser.id, currentUser.role);
+        setRequests(list);
+      }
+    } catch (err: any) {
+      showToast('error', 'Lỗi tải danh sách yêu cầu', err?.message);
+    }
   };
 
   useEffect(() => {
     loadRequests();
   }, [currentUser.id]);
 
-  const handleCancelRequest = (req: ServiceRequest) => {
+  const handleCancelRequest = async (req: ServiceRequest) => {
     if (!['draft', 'submitted'].includes(req.status)) {
       showToast('error', 'Không thể hủy hồ sơ', 'Chỉ có thể hủy hồ sơ khi đang ở trạng thái Nháp hoặc Chờ xử lý');
       return;
@@ -47,12 +59,19 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
     const confirmCancel = window.confirm(`Bạn có chắc chắn muốn hủy yêu cầu "${req.request_code}"?`);
     if (!confirmCancel) return;
 
-    const success = dataService.cancelRequest(req.id, currentUser.id);
-    if (success) {
-      loadRequests();
+    setCancellingId(req.id);
+    try {
+      if (isSupabaseConfigured) {
+        await supabaseCancelRequest(req.id);
+      } else {
+        dataService.cancelRequest(req.id, currentUser.id);
+      }
+      await loadRequests();
       showToast('info', 'Đã hủy yêu cầu!', `Mã hồ sơ ${req.request_code} đã được chuyển sang trạng thái Đã hủy`);
-    } else {
-      showToast('error', 'Lỗi thao tác', 'Không thể hủy yêu cầu vào lúc này');
+    } catch (err: any) {
+      showToast('error', 'Lỗi thao tác hủy', err?.message || 'Không thể hủy yêu cầu vào lúc này');
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -166,11 +185,16 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
                   {['draft', 'submitted'].includes(req.status) && (
                     <button
                       onClick={() => handleCancelRequest(req)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800/50 text-[11px] font-medium transition-all cursor-pointer flex items-center space-x-1"
+                      disabled={cancellingId === req.id}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800/50 text-[11px] font-medium transition-all cursor-pointer flex items-center space-x-1 disabled:opacity-50"
                       title="Hủy bỏ yêu cầu này"
                     >
-                      <Ban className="w-3 h-3" />
-                      <span>Hủy</span>
+                      {cancellingId === req.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin text-rose-400" />
+                      ) : (
+                        <Ban className="w-3 h-3" />
+                      )}
+                      <span>{cancellingId === req.id ? 'Đang hủy...' : 'Hủy'}</span>
                     </button>
                   )}
                 </div>

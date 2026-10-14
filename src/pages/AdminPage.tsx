@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { 
   Profile, 
   ServiceRequest, 
@@ -10,6 +10,7 @@ import type {
   AcademicStatus 
 } from '../types';
 import { dataService } from '../services/dataService';
+import { isSupabaseConfigured, supabaseReviewRequest, supabaseFetchRequests } from '../lib/supabase';
 import { RequestBadge, PaymentBadge, AcademicBadge } from '../components/common/Badge';
 import { 
   ShieldCheck, 
@@ -21,7 +22,9 @@ import {
   Search, 
   Filter, 
   Layers, 
-  AlertCircle
+  AlertCircle,
+  ShieldAlert,
+  Loader2
 } from 'lucide-react';
 
 interface AdminPageProps {
@@ -32,8 +35,37 @@ interface AdminPageProps {
 
 export const AdminPage: React.FC<AdminPageProps> = ({
   currentUser,
+  onNavigate,
   showToast,
 }) => {
+  // SECURITY & ACCESS CONTROL GUARD:
+  // Strictly disallow non-manager users from viewing or interacting with admin workbench
+  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') {
+    return (
+      <div className="max-w-2xl mx-auto my-12 p-8 glass-panel rounded-3xl border border-rose-800/40 text-center space-y-4 animate-fadeIn">
+        <div className="w-16 h-16 mx-auto rounded-full bg-rose-950/60 border border-rose-500/40 flex items-center justify-center text-rose-400">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-white">Truy Cập Bị Từ Chối (403 Forbidden)</h2>
+        <p className="text-xs sm:text-sm text-slate-300">
+          Bạn đang đăng nhập với vai trò <strong>Sinh viên / Người học</strong>.
+        </p>
+        <p className="text-xs text-slate-400">
+          Hệ thống bảo mật Row Level Security và phân quyền EduMate đã ngăn chặn hiển thị dữ liệu quản trị. Chỉ tài khoản <strong>Người Quản Lý (Manager/Admin)</strong> mới có quyền truy cập khu vực này.
+        </p>
+        {onNavigate && (
+          <div className="pt-2">
+            <button
+              onClick={() => onNavigate('home')}
+              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md"
+            >
+              Trở về Trang chủ
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const [adminTab, setAdminTab] = useState<'requests' | 'academic' | 'reconciliation' | 'audit'>('requests');
 
@@ -65,13 +97,27 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     status: 'published' as AcademicStatus,
   });
 
-  const reloadData = () => {
-    setRequests(dataService.getRequests());
+  const reloadData = async () => {
+    try {
+      if (isSupabaseConfigured) {
+        const liveReqs = await supabaseFetchRequests();
+        setRequests(liveReqs);
+      } else {
+        setRequests(dataService.getRequests());
+      }
+    } catch (err: any) {
+      console.warn('Reload requests error:', err);
+      setRequests(dataService.getRequests());
+    }
     setAcademicItems(dataService.getAcademicItems());
     setOrders(dataService.getOrders());
     setPayments(dataService.getPayments());
     setAuditLogs(dataService.getAuditLogs());
   };
+
+  useEffect(() => {
+    reloadData();
+  }, []);
 
   // Metrics
   const pendingRequestsCount = requests.filter(r => ['submitted', 'in_review'].includes(r.status)).length;
@@ -82,8 +128,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     .reduce((sum, p) => sum + p.amount, 0);
 
   // Review logic
-  const handleReviewAction = (status: RequestStatus) => {
-    if (!selectedReq) return;
+  const handleReviewAction = async (status: RequestStatus) => {
+    if (!selectedReq || actionLoading) return;
 
     if (status === 'rejected' && (!reviewNotes || reviewNotes.trim().length === 0)) {
       setReviewError('Bắt buộc phải nhập lý do/ghi chú khi từ chối hồ sơ (Ràng buộc toàn vẹn hệ thống)!');
@@ -91,26 +137,34 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     }
 
     setActionLoading(true);
+    setReviewError('');
 
-    setTimeout(() => {
-      const updated = dataService.updateRequestStatus(
-        selectedReq.id,
-        status,
-        currentUser.id,
-        currentUser.full_name,
-        reviewNotes.trim() || undefined
-      );
-
-      setActionLoading(false);
-      if (updated) {
+    try {
+      if (isSupabaseConfigured) {
+        await supabaseReviewRequest(selectedReq.id, status, reviewNotes.trim() || undefined);
+        await reloadData();
+      } else {
+        dataService.updateRequestStatus(
+          selectedReq.id,
+          status,
+          currentUser.id,
+          currentUser.full_name,
+          reviewNotes.trim() || undefined
+        );
         reloadData();
-        setSelectedReq(null);
-        setReviewNotes('');
-        setReviewError('');
-        const statusLabel = status === 'approved' ? 'Phê duyệt' : status === 'rejected' ? 'Từ chối' : 'Đang xử lý';
-        showToast('success', `${statusLabel} hồ sơ thành công!`, `Mã yêu cầu: ${updated.request_code}`);
       }
-    }, 400);
+
+      const statusLabel = status === 'approved' ? 'Phê duyệt' : status === 'rejected' ? 'Từ chối' : 'Đang xử lý';
+      showToast('success', `${statusLabel} hồ sơ thành công!`, `Mã yêu cầu: ${selectedReq.request_code}`);
+      setSelectedReq(null);
+      setReviewNotes('');
+      setReviewError('');
+    } catch (err: any) {
+      setReviewError(err?.message || 'Có lỗi xảy ra khi thẩm định hồ sơ');
+      showToast('error', 'Thao tác không thành công', err?.message);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // Create Academic Item logic
@@ -557,9 +611,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                 type="button"
                 disabled={actionLoading}
                 onClick={() => handleReviewAction('in_review')}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-1.5"
               >
-                Đánh dấu đang thụ lý (In Review)
+                {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>Đánh dấu đang thụ lý (In Review)</span>
               </button>
 
               <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
@@ -567,17 +622,19 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                   type="button"
                   disabled={actionLoading}
                   onClick={() => handleReviewAction('rejected')}
-                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/30 cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/30 cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-1.5"
                 >
-                  Từ chối hồ sơ
+                  {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Từ chối hồ sơ</span>
                 </button>
                 <button
                   type="button"
                   disabled={actionLoading}
                   onClick={() => handleReviewAction('approved')}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-1.5"
                 >
-                  Phê duyệt hồ sơ
+                  {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Phê duyệt hồ sơ</span>
                 </button>
               </div>
             </div>

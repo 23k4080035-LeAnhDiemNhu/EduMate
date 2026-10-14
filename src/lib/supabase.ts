@@ -242,3 +242,52 @@ export async function supabaseReviewRequest(
   if (error) throw error;
   return data;
 }
+
+/**
+ * Sinh viên hủy yêu cầu của chính mình (RLS cho phép nếu status in ('draft', 'submitted')).
+ */
+export async function supabaseCancelRequest(requestId: string): Promise<boolean> {
+  if (!isSupabaseConfigured) throw new Error('Supabase chưa cấu hình');
+
+  const session = await supabaseGetSession();
+  if (!session?.user?.id) throw new Error('Chưa đăng nhập');
+
+  const { error } = await supabase
+    .from('service_requests')
+    .update({
+      status: 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', requestId)
+    .eq('student_id', session.user.id)
+    .in('status', ['draft', 'submitted']);
+
+  if (error) throw error;
+  return true;
+}
+
+/**
+ * Cập nhật hồ sơ người dùng (RLS bảo vệ: auth.uid() = id, không thể tự sửa role qua đây).
+ */
+export async function supabaseUpdateProfile(
+  userId: string,
+  updates: {
+    full_name?: string;
+    phone?: string;
+    avatar_url?: string;
+    student_code?: string;
+  }
+): Promise<Profile | null> {
+  if (!isSupabaseConfigured) throw new Error('Supabase chưa cấu hình');
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', userId);
+
+  if (error) throw error;
+  return supabaseFetchProfile(userId);
+}

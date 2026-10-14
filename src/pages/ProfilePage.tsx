@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Profile } from '../types';
 import { dataService } from '../services/dataService';
+import { isSupabaseConfigured, supabaseUpdateProfile } from '../lib/supabase';
 import { 
   User, 
   Mail, 
@@ -9,7 +10,6 @@ import {
   Save, 
   Loader2
 } from 'lucide-react';
-
 
 interface ProfilePageProps {
   currentUser: Profile;
@@ -31,17 +31,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Calculate user activity statistics
-  const userRequests = dataService.getRequests().filter(r => r.student_id === currentUser.id);
-  const userEnrollments = dataService.getEnrollments().filter(e => e.student_id === currentUser.id);
-  const userOrders = dataService.getOrders().filter(o => o.student_id === currentUser.id);
+  const userRequests = dataService.getRequests(currentUser.id, currentUser.role);
+  const userEnrollments = dataService.getEnrollments(currentUser.id, currentUser.role);
+  const userOrders = dataService.getOrders(currentUser.id, currentUser.role);
   const approvedRequests = userRequests.filter(r => r.status === 'approved');
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { [key: string]: string } = {};
 
-    if (!fullName.trim()) {
+    const trimmedName = fullName.trim();
+    if (!trimmedName) {
       newErrors.fullName = 'Họ và tên không được để trống';
+    } else if (trimmedName.length < 2) {
+      newErrors.fullName = 'Họ và tên phải có tối thiểu 2 ký tự';
     }
 
     if (phone && !/^[0-9]{9,11}$/.test(phone.replace(/[\s-]/g, ''))) {
@@ -50,27 +53,43 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      showToast('error', 'Dữ liệu không hợp lệ', 'Vui lòng kiểm tra các trường báo lỗi');
       return;
     }
 
     setErrors({});
     setLoading(true);
 
-    setTimeout(() => {
-      const updated = dataService.updateProfile(currentUser.id, {
-        full_name: fullName.trim(),
-        phone: phone.trim() || undefined,
-        avatar_url: avatarUrl.trim() || currentUser.avatar_url
-      });
-
-      setLoading(false);
-      if (updated) {
-        onProfileUpdated(updated);
-        showToast('success', 'Đã lưu thay đổi hồ sơ!', 'Thông tin cá nhân đã được cập nhật thành công');
+    try {
+      if (isSupabaseConfigured) {
+        const updated = await supabaseUpdateProfile(currentUser.id, {
+          full_name: trimmedName,
+          phone: phone.trim() || undefined,
+          avatar_url: avatarUrl.trim() || undefined,
+        });
+        if (updated) {
+          onProfileUpdated(updated);
+          showToast('success', 'Đã lưu hồ sơ (Supabase)!', 'Dữ liệu hồ sơ đã được đồng bộ vào database');
+        }
       } else {
-        showToast('error', 'Cập nhật thất bại', 'Không thể lưu thông tin hồ sơ');
+        const updated = dataService.updateProfile(currentUser.id, {
+          full_name: trimmedName,
+          phone: phone.trim() || undefined,
+          avatar_url: avatarUrl.trim() || currentUser.avatar_url
+        }, currentUser.id);
+
+        if (updated) {
+          onProfileUpdated(updated);
+          showToast('success', 'Đã lưu thay đổi hồ sơ!', 'Thông tin cá nhân đã được cập nhật thành công');
+        } else {
+          showToast('error', 'Cập nhật thất bại', 'Không thể lưu thông tin hồ sơ');
+        }
       }
-    }, 400);
+    } catch (err: any) {
+      showToast('error', 'Lỗi cập nhật hồ sơ', err?.message || 'Đã có lỗi xảy ra');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

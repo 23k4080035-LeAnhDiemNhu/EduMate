@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Profile, ServiceForm } from '../types';
 import { dataService } from '../services/dataService';
+import { isSupabaseConfigured, supabaseCreateRequest } from '../lib/supabase';
 import { 
   FileText, 
   Send, 
@@ -63,8 +64,12 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFormSubmit = (status: 'draft' | 'submitted') => {
-    if (status === 'submitted' && !validate()) return;
+  const handleFormSubmit = async (status: 'draft' | 'submitted') => {
+    if (loading) return; // Anti-duplicate submit
+    if (status === 'submitted' && !validate()) {
+      showToast('error', 'Biểu mẫu chưa hợp lệ', 'Vui lòng kiểm tra lại các trường thông tin');
+      return;
+    }
 
     setLoading(true);
 
@@ -83,25 +88,37 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
       formDataPayload.khung_gio_ranh = targetDate || 'Linh hoạt theo trợ giảng';
     }
 
-    setTimeout(() => {
-      const created = dataService.createRequest({
-        student_id: currentUser.id,
-        form_type_id: currentForm.id,
-        form_type_title: currentForm.title,
-        student_name: currentUser.full_name,
-        student_email: currentUser.email,
-        student_code: currentUser.student_code,
-        form_data: formDataPayload,
-        status: status,
-      });
-
-      setLoading(false);
-      const actionText = status === 'submitted' ? 'Đã nộp chính thức' : 'Đã lưu bản nháp';
-      showToast('success', `${actionText} thành công!`, `Mã yêu cầu: ${created.request_code}`);
-      
-      // Navigate to my-requests page
+    try {
+      if (isSupabaseConfigured) {
+        const requestCode = `REQ-${Date.now().toString().slice(-6)}`;
+        const created = await supabaseCreateRequest({
+          requestCode,
+          formTypeId: currentForm.id,
+          formData: formDataPayload,
+          status: status,
+        });
+        const actionText = status === 'submitted' ? 'Đã nộp chính thức' : 'Đã lưu bản nháp';
+        showToast('success', `${actionText} (Supabase Cloud)!`, `Mã hồ sơ: ${created.request_code}`);
+      } else {
+        const created = dataService.createRequest({
+          student_id: currentUser.id,
+          form_type_id: currentForm.id,
+          form_type_title: currentForm.title,
+          student_name: currentUser.full_name,
+          student_email: currentUser.email,
+          student_code: currentUser.student_code,
+          form_data: formDataPayload,
+          status: status,
+        });
+        const actionText = status === 'submitted' ? 'Đã nộp chính thức' : 'Đã lưu bản nháp';
+        showToast('success', `${actionText} thành công!`, `Mã yêu cầu: ${created.request_code}`);
+      }
       onNavigate('my-requests');
-    }, 500);
+    } catch (err: any) {
+      showToast('error', 'Lỗi gửi yêu cầu', err?.message || 'Không thể gửi yêu cầu vào lúc này');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
