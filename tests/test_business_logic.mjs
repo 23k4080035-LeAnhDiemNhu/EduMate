@@ -182,6 +182,32 @@ class TestDataStore {
 
     return this.requests[idx];
   }
+
+  updateOrderStatus(orderId, status, managerId, managerName) {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền cập nhật trạng thái đơn hàng.');
+    }
+    return { orderId, status, updated_by: managerId };
+  }
+
+  createPayment(payment) {
+    if (payment.status && payment.status !== 'pending') {
+      throw new Error('SECURITY VIOLATION: Giao dịch thanh toán mới khởi tạo bắt buộc phải ở trạng thái chờ xử lý (pending).');
+    }
+    if (payment.confirmed_by || payment.confirmed_at) {
+      throw new Error('SECURITY VIOLATION: Người dùng không được phép tự gán người xác nhận thanh toán.');
+    }
+    return { ...payment, id: 'pay-new', status: 'pending' };
+  }
+
+  verifyPayment(paymentId, status, managerId, managerName) {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền đối soát và xác nhận thanh toán.');
+    }
+    return { paymentId, status, confirmed_by: managerId };
+  }
 }
 
 // Instantiate simulator
@@ -453,6 +479,29 @@ runTest('Bảo mật: Quản lý cố duyệt đơn đã bị hủy bỏ bởi s
       'Duyệt đơn đã hủy'
     );
   }, /BUSINESS RULE VIOLATION/);
+});
+
+runTest('Bảo mật: Sinh viên cố tình tạo thanh toán với trạng thái "successful" bị chặn', () => {
+  assert.throws(() => {
+    ds.createPayment({
+      order_id: 'ord-101',
+      amount: 1200000,
+      payment_method: 'bank_transfer',
+      status: 'successful' // Gian lận trạng thái thanh toán
+    });
+  }, /SECURITY VIOLATION/);
+});
+
+runTest('Bảo mật: Sinh viên cố tình tự gọi hàm verifyPayment để duyệt thanh toán bị chặn (UNAUTHORIZED)', () => {
+  assert.throws(() => {
+    ds.verifyPayment('pay-101', 'successful', 'usr-sv1', 'Nguyễn Văn An');
+  }, /UNAUTHORIZED/);
+});
+
+runTest('Bảo mật: Sinh viên cố tình tự gọi hàm updateOrderStatus để đổi trạng thái đơn sang "paid" bị chặn (UNAUTHORIZED)', () => {
+  assert.throws(() => {
+    ds.updateOrderStatus('ord-101', 'paid', 'usr-sv1', 'Nguyễn Văn An');
+  }, /UNAUTHORIZED/);
 });
 
 console.log('\n=================================================================');

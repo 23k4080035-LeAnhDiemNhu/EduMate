@@ -519,6 +519,11 @@ class DataStore {
   }
 
   updateAcademicItem(id: string, updates: Partial<AcademicItem>, managerId: string, managerName: string): AcademicItem | null {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền chỉnh sửa mục học tập.');
+    }
+
     const items = this.getAcademicItems();
     const idx = items.findIndex(i => i.id === id);
     if (idx === -1) return null;
@@ -569,6 +574,11 @@ class DataStore {
   }
 
   updateOrderStatus(orderId: string, status: OrderStatus, managerId: string, managerName: string): Order | null {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền cập nhật trạng thái đơn hàng.');
+    }
+
     const orders = this.getOrders();
     const idx = orders.findIndex(o => o.id === orderId);
     if (idx === -1) return null;
@@ -590,12 +600,23 @@ class DataStore {
   }
 
   createPayment(payment: Omit<Payment, 'id' | 'payment_code' | 'created_at'>): Payment {
+    // Security check: Student cannot self-approve payment
+    if (payment.status && payment.status !== 'pending') {
+      throw new Error('SECURITY VIOLATION: Giao dịch thanh toán mới khởi tạo bắt buộc phải ở trạng thái chờ xử lý (pending).');
+    }
+    if (payment.confirmed_by || payment.confirmed_at) {
+      throw new Error('SECURITY VIOLATION: Người dùng không được phép tự gán người xác nhận hoặc ngày xác nhận thanh toán.');
+    }
+
     const payments = this.getPayments();
     const count = payments.length + 1;
     const newPay: Payment = {
       ...payment,
       id: `pay-${Date.now()}`,
       payment_code: `PAY-2026-${String(count).padStart(3, '0')}`,
+      status: 'pending',
+      confirmed_by: undefined,
+      confirmed_at: undefined,
       created_at: new Date().toISOString()
     };
     payments.unshift(newPay);
@@ -604,6 +625,11 @@ class DataStore {
   }
 
   verifyPayment(paymentId: string, status: PaymentStatus, managerId: string, managerName: string): Payment | null {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền đối soát và xác nhận thanh toán.');
+    }
+
     const payments = this.getPayments();
     const idx = payments.findIndex(p => p.id === paymentId);
     if (idx === -1) return null;

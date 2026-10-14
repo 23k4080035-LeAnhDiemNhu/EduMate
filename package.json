@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "node tests/test_business_logic.mjs && node tests/test_rls_security.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
