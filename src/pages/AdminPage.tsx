@@ -7,7 +7,9 @@ import type {
   Payment, 
   AuditLog, 
   RequestStatus, 
-  AcademicStatus 
+  AcademicStatus,
+  TutorProfile,
+  LearningRequest
 } from '../types';
 import { dataService } from '../services/dataService';
 import { isSupabaseConfigured, supabaseReviewRequest, supabaseFetchRequests } from '../lib/supabase';
@@ -16,7 +18,6 @@ import {
   ShieldCheck, 
   Clock, 
   CheckCircle2, 
-  DollarSign, 
   FileSearch, 
   Plus, 
   Search, 
@@ -67,16 +68,19 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     );
   }
 
-  const [adminTab, setAdminTab] = useState<'requests' | 'academic' | 'reconciliation' | 'audit'>('requests');
+  const [adminTab, setAdminTab] = useState<'tutors' | 'learning_requests' | 'requests' | 'academic' | 'reconciliation' | 'audit'>('tutors');
 
   // Datasets from service
+  const [tutors, setTutors] = useState<TutorProfile[]>(() => dataService.getTutors(false));
+  const [learningRequests, setLearningRequests] = useState<LearningRequest[]>(() => dataService.getLearningRequests());
   const [requests, setRequests] = useState<ServiceRequest[]>(() => dataService.getRequests());
   const [academicItems, setAcademicItems] = useState<AcademicItem[]>(() => dataService.getAcademicItems());
-  const [orders, setOrders] = useState<Order[]>(() => dataService.getOrders());
+  const [_orders, setOrders] = useState<Order[]>(() => dataService.getOrders());
   const [payments, setPayments] = useState<Payment[]>(() => dataService.getPayments());
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => dataService.getAuditLogs());
 
   // Filter & Search states
+  const [tutorFilter, setTutorFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
   const [requestStatusFilter, setRequestStatusFilter] = useState<string>('all');
   const [requestSearchTerm, setRequestSearchTerm] = useState('');
 
@@ -113,19 +117,33 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     setOrders(dataService.getOrders());
     setPayments(dataService.getPayments());
     setAuditLogs(dataService.getAuditLogs());
+    setTutors(dataService.getTutors(false));
+    setLearningRequests(dataService.getLearningRequests());
   };
 
   useEffect(() => {
     reloadData();
   }, []);
 
+  // Tutor Verification logic (Quy trình B)
+  const handleVerifyTutor = (tutorId: string, status: 'verified' | 'rejected') => {
+    try {
+      dataService.verifyTutor(tutorId, status, currentUser.id, currentUser.full_name);
+      setTutors(dataService.getTutors(false));
+      setAuditLogs(dataService.getAuditLogs());
+      if (status === 'verified') {
+        showToast('success', 'Đã phê duyệt hồ sơ người dạy!', 'Hồ sơ đã được cấp nhãn "Đã xác minh" và hiển thị công khai.');
+      } else {
+        showToast('info', 'Đã từ chối hồ sơ người dạy', 'Hồ sơ đã được lưu vết và chuyển trạng thái từ chối.');
+      }
+    } catch (err: any) {
+      showToast('error', 'Lỗi kiểm duyệt', err.message);
+    }
+  };
+
   // Metrics
-  const pendingRequestsCount = requests.filter(r => ['submitted', 'in_review'].includes(r.status)).length;
-  const approvedRequestsCount = requests.filter(r => r.status === 'approved').length;
-  const pendingPaymentsCount = payments.filter(p => p.status === 'pending').length;
-  const totalRevenue = payments
-    .filter(p => p.status === 'successful')
-    .reduce((sum, p) => sum + p.amount, 0);
+  const pendingTutorsCount = tutors.filter(t => t.verification_status === 'pending').length;
+  const verifiedTutorsCount = tutors.filter(t => t.verification_status === 'verified').length;
 
   // Review logic
   const handleReviewAction = async (status: RequestStatus) => {
@@ -225,11 +243,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-white flex items-center space-x-2">
-            <ShieldCheck className="w-6 h-6 text-indigo-400" />
-            <span>Khu Vực Quản Trị Giáo Vụ & Xử Lý Hồ Sơ</span>
+            <ShieldCheck className="w-6 h-6 text-emerald-400" />
+            <span>Khu Vực Quản Trị Hệ Thống EduMate Huế</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-            Bàn làm việc thẩm định yêu cầu, quản lý danh mục học tập (CRUD) và đối soát giao dịch
+            Duyệt hồ sơ người dạy, quản lý yêu cầu kết nối học, danh mục môn học và nhật ký kiểm toán
           </p>
         </div>
       </div>
@@ -238,89 +256,273 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-4 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Hồ sơ chờ thẩm định</span>
+            <span>Hồ sơ người dạy chờ duyệt</span>
             <Clock className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-amber-400">{pendingRequestsCount}</div>
-          <div className="text-[11px] text-slate-400">Yêu cầu người học gửi lên</div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-amber-400">{pendingTutorsCount}</div>
+          <div className="text-[11px] text-slate-400">Cần xác minh bằng cấp</div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Hồ sơ đã phê duyệt</span>
+            <span>Người dạy đã xác minh</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400">{approvedRequestsCount}</div>
-          <div className="text-[11px] text-slate-400">Đã ban hành kết quả</div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400">{verifiedTutorsCount}</div>
+          <div className="text-[11px] text-slate-400">Hiển thị công khai tại Huế</div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Giao dịch chờ đối soát</span>
-            <DollarSign className="w-4 h-4 text-indigo-400" />
+            <span>Yêu cầu kết nối học</span>
+            <FileSearch className="w-4 h-4 text-blue-400" />
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-indigo-400">{pendingPaymentsCount}</div>
-          <div className="text-[11px] text-slate-400">Chờ khớp lệnh ({orders.length} đơn hàng)</div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-blue-400">{learningRequests.length}</div>
+          <div className="text-[11px] text-slate-400">Giữa người học & người dạy</div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Tổng thu học vụ</span>
+            <span>Yêu cầu học vụ</span>
             <Layers className="w-4 h-4 text-teal-400" />
           </div>
           <div className="text-xl sm:text-2xl font-extrabold text-white">
-            {totalRevenue.toLocaleString('vi-VN')} ₫
+            {requests.length}
           </div>
-          <div className="text-[11px] text-teal-400">Giao dịch thành công</div>
+          <div className="text-[11px] text-teal-400">Biểu mẫu hành chính</div>
         </div>
       </div>
 
       {/* Admin Module Navigation Tabs */}
       <div className="flex items-center space-x-2 border-b border-slate-800 pb-2 overflow-x-auto">
         <button
-          onClick={() => setAdminTab('requests')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-            adminTab === 'requests'
-              ? 'bg-indigo-600 text-white shadow-sm'
+          onClick={() => setAdminTab('tutors')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center space-x-1.5 ${
+            adminTab === 'tutors'
+              ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
-          Thẩm định yêu cầu ({requests.length})
+          <span>Duyệt Người Dạy ({tutors.length})</span>
+          {pendingTutorsCount > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-slate-950 font-black">
+              {pendingTutorsCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setAdminTab('learning_requests')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            adminTab === 'learning_requests'
+              ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+          }`}
+        >
+          Yêu Cầu Kết Nối Học ({learningRequests.length})
+        </button>
+
+        <button
+          onClick={() => setAdminTab('requests')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            adminTab === 'requests'
+              ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+          }`}
+        >
+          Hồ Sơ Học Vụ ({requests.length})
         </button>
 
         <button
           onClick={() => setAdminTab('academic')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             adminTab === 'academic'
-              ? 'bg-indigo-600 text-white shadow-sm'
+              ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
-          Quản lý khóa học (CRUD) ({academicItems.length})
+          Khóa Học ({academicItems.length})
         </button>
 
         <button
           onClick={() => setAdminTab('reconciliation')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             adminTab === 'reconciliation'
-              ? 'bg-indigo-600 text-white shadow-sm'
+              ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
-          Đối soát giao dịch ({payments.length})
+          Đối Soát ({payments.length})
         </button>
 
         <button
           onClick={() => setAdminTab('audit')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             adminTab === 'audit'
-              ? 'bg-indigo-600 text-white shadow-sm'
+              ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
           Audit Logs ({auditLogs.length})
         </button>
       </div>
+
+      {/* TAB 0: DUYỆT HỒ SƠ NGƯỜI DẠY (QUY TRÌNH B) */}
+      {adminTab === 'tutors' && (
+        <section className="space-y-4">
+          <div className="glass-panel rounded-2xl p-4 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center space-x-2">
+              <span className="text-slate-400">Lọc theo trạng thái:</span>
+              {(['all', 'pending', 'verified', 'rejected'] as const).map(f => (
+                <button
+                  key={f}
+                  onClick={() => setTutorFilter(f)}
+                  className={`px-3 py-1.5 rounded-xl font-medium transition-all cursor-pointer ${
+                    tutorFilter === f
+                      ? 'bg-emerald-600 text-white font-bold'
+                      : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  }`}
+                >
+                  {f === 'all' ? 'Tất cả' : f === 'pending' ? 'Chờ duyệt' : f === 'verified' ? 'Đã duyệt' : 'Từ chối'}
+                </button>
+              ))}
+            </div>
+            <div className="text-[11px] text-slate-400">
+              * Chỉ hồ sơ đã duyệt mới được gắn nhãn đã xác minh trên trang chủ & tìm kiếm
+            </div>
+          </div>
+
+          <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+                  <tr>
+                    <th className="px-5 py-3.5">Người Dạy</th>
+                    <th className="px-5 py-3.5">Môn Hướng Dẫn</th>
+                    <th className="px-5 py-3.5">Khu Vực & Hình Thức</th>
+                    <th className="px-5 py-3.5">Mức Phí</th>
+                    <th className="px-5 py-3.5">Trạng Thái</th>
+                    <th className="px-5 py-3.5 text-right">Kiểm Duyệt</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                  {tutors
+                    .filter(t => tutorFilter === 'all' || t.verification_status === tutorFilter)
+                    .map(tutor => (
+                      <tr key={tutor.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-5 py-4">
+                          <div className="flex items-center space-x-3">
+                            <img src={tutor.avatar_url} alt="" className="w-9 h-9 rounded-xl object-cover ring-1 ring-slate-700" />
+                            <div>
+                              <div className="font-bold text-white">{tutor.full_name}</div>
+                              <div className="text-[11px] text-slate-400 line-clamp-1">{tutor.headline}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            {tutor.subjects.map((s, idx) => (
+                              <span key={idx} className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-slate-300">
+                          <div>{tutor.district}</div>
+                          <div className="text-[10px] text-slate-500">{tutor.teaching_mode === 'both' ? 'Trực tiếp & Online' : tutor.teaching_mode === 'offline' ? 'Trực tiếp tại Huế' : 'Online'}</div>
+                        </td>
+                        <td className="px-5 py-4 font-bold text-emerald-400">
+                          {tutor.hourly_rate.toLocaleString('vi-VN')} đ/buổi
+                        </td>
+                        <td className="px-5 py-4">
+                          {tutor.verification_status === 'verified' && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                              Đã xác minh
+                            </span>
+                          )}
+                          {tutor.verification_status === 'pending' && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
+                              Chờ duyệt
+                            </span>
+                          )}
+                          {tutor.verification_status === 'rejected' && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                              Bị từ chối
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          {tutor.verification_status === 'pending' ? (
+                            <div className="flex items-center justify-end space-x-1.5">
+                              <button
+                                onClick={() => handleVerifyTutor(tutor.id, 'rejected')}
+                                className="px-2.5 py-1 rounded-lg bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 font-semibold border border-rose-800/60 transition-all cursor-pointer"
+                              >
+                                Từ chối
+                              </button>
+                              <button
+                                onClick={() => handleVerifyTutor(tutor.id, 'verified')}
+                                className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-md shadow-emerald-600/30 cursor-pointer"
+                              >
+                                Phê duyệt
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 text-[11px]">Đã xử lý</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* TAB 0.5: QUẢN LÝ YÊU CẦU HỌC TẬP (LEARNING REQUESTS) */}
+      {adminTab === 'learning_requests' && (
+        <section className="space-y-4">
+          <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+                  <tr>
+                    <th className="px-5 py-3.5">Mã Yêu Cầu</th>
+                    <th className="px-5 py-3.5">Người Học</th>
+                    <th className="px-5 py-3.5">Người Dạy</th>
+                    <th className="px-5 py-3.5">Môn & Hình Thức</th>
+                    <th className="px-5 py-3.5">Lịch Mong Muốn</th>
+                    <th className="px-5 py-3.5">Trạng Thái</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                  {learningRequests.map((lr) => (
+                    <tr key={lr.id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="px-5 py-3.5 font-mono font-bold text-white">{lr.request_code}</td>
+                      <td className="px-5 py-3.5 font-semibold text-slate-200">{lr.student_name}</td>
+                      <td className="px-5 py-3.5 text-emerald-400 font-semibold">{lr.tutor_name}</td>
+                      <td className="px-5 py-3.5">{lr.subject_name} ({lr.teaching_mode === 'offline' ? 'Trực tiếp' : 'Online'})</td>
+                      <td className="px-5 py-3.5 text-slate-400">{lr.preferred_schedule}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          lr.status === 'completed' ? 'bg-blue-500/20 text-blue-400' :
+                          lr.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-400' :
+                          lr.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
+                          'bg-slate-800 text-slate-400'
+                        }`}>
+                          {lr.status.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* TAB 1: YÊU CẦU DỊCH VỤ & THẨM ĐỊNH */}
       {adminTab === 'requests' && (

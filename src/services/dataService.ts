@@ -1,6 +1,11 @@
 import type { 
   Profile, 
   UserRole,
+  TutorProfile,
+  LearningRequest,
+  LearningRequestStatus,
+  Review,
+  SubjectCategory,
   ServiceForm, 
   ServiceRequest, 
   AcademicItem, 
@@ -13,8 +18,10 @@ import type {
   OrderStatus
 } from '../types';
 
+// ==============================================================================
+// SEED DATA: EDUMATE HUẾ - NỀN TẢNG KẾT NỐI NGƯỜI HỌC VÀ NGƯỜI DẠY
+// ==============================================================================
 
-// Dữ liệu hạt giống ban đầu (Generic Seed Data) cho mục đích kiểm thử UI/UX
 const initialProfiles: Profile[] = [
   {
     id: 'usr-student-01',
@@ -24,6 +31,7 @@ const initialProfiles: Profile[] = [
     student_code: 'SV2026-0891',
     role: 'student',
     status: 'active',
+    district: 'TP. Huế',
     avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
     created_at: '2026-10-01T08:00:00Z',
     updated_at: '2026-10-01T08:00:00Z'
@@ -36,23 +44,257 @@ const initialProfiles: Profile[] = [
     student_code: 'SV2026-1044',
     role: 'student',
     status: 'active',
+    district: 'Hương Thủy, Thừa Thiên Huế',
     avatar_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200',
     created_at: '2026-10-03T08:00:00Z',
     updated_at: '2026-10-03T08:00:00Z'
   },
   {
+    id: 'usr-tutor-01',
+    email: 'tutor@edumate.vn',
+    full_name: 'Thầy Lê Hoàng Nam',
+    phone: '0977889900',
+    role: 'tutor',
+    status: 'active',
+    district: 'TP. Huế',
+    bio: 'Cựu sinh viên Thủ khoa Khoa Toán - ĐH Khoa học Huế. Hơn 4 năm kinh nghiệm dạy kèm Toán cao cấp và luyện thi THPT Quốc gia.',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+    created_at: '2026-09-10T08:00:00Z',
+    updated_at: '2026-09-10T08:00:00Z'
+  },
+  {
+    id: 'usr-tutor-02',
+    email: 'ngoc.ielts@edumate.vn',
+    full_name: 'Cô Trần Thị Bích Ngọc',
+    phone: '0944556677',
+    role: 'tutor',
+    status: 'active',
+    district: 'Hương Thủy, Huế',
+    bio: 'Cử nhân Sư phạm Tiếng Anh - ĐH Ngoại ngữ Huế. Chứng chỉ IELTS 8.0 (Speaking 8.5). Phương pháp phản xạ tự nhiên.',
+    avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
+    created_at: '2026-09-12T08:00:00Z',
+    updated_at: '2026-09-12T08:00:00Z'
+  },
+  {
     id: 'usr-manager-01',
     email: 'quanly@edumate.vn',
-    full_name: 'Trần Thị Mai (Trưởng ban Giáo vụ)',
+    full_name: 'Trần Thị Mai (Quản trị viên EduMate Huế)',
     phone: '0987654321',
     role: 'manager',
     status: 'active',
-    avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
-    created_at: '2026-09-15T08:00:00Z',
-    updated_at: '2026-09-15T08:00:00Z'
+    district: 'TP. Huế',
+    avatar_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200',
+    created_at: '2026-09-01T08:00:00Z',
+    updated_at: '2026-09-01T08:00:00Z'
   }
 ];
 
+const initialTutors: TutorProfile[] = [
+  {
+    id: 'tut-01',
+    user_id: 'usr-tutor-01',
+    full_name: 'Thầy Lê Hoàng Nam',
+    headline: 'Thủ khoa Sư phạm Toán • Chuyên gia Toán cao cấp & Giải tích',
+    bio: 'Phương pháp trực quan, tập trung vào bản chất toán học thay vì học vẹt công thức. Đã hướng dẫn hơn 50 bạn sinh viên ĐH Huế đạt điểm A học phần Toán cao cấp.',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
+    subjects: ['Toán cao cấp', 'Giải tích đại số', 'Xác suất thống kê'],
+    hourly_rate: 120000,
+    teaching_mode: 'both',
+    district: 'TP. Huế (Khu vực ĐH Khoa học & ĐH Sư phạm)',
+    experience_years: 4,
+    verification_status: 'verified',
+    rating_avg: 4.9,
+    rating_count: 18,
+    available_days: ['Tối thứ 2', 'Tối thứ 4', 'Chiều thứ 7', 'Chủ nhật'],
+    certifications: 'Bằng Cử nhân Xuất sắc ĐH Sư phạm Huế, Giải Nhì Olympic Toán sinh viên toàn quốc',
+    created_at: '2026-09-10T08:00:00Z',
+    updated_at: '2026-10-01T08:00:00Z'
+  },
+  {
+    id: 'tut-02',
+    user_id: 'usr-tutor-02',
+    full_name: 'Cô Trần Thị Bích Ngọc',
+    headline: 'IELTS 8.0 • Luyện thi Tiếng Anh giao tiếp & Speaking cấp tốc',
+    bio: 'Tốt nghiệp ĐH Ngoại ngữ Huế. Chuyên chỉnh phát âm IPA chuẩn Anh - Mỹ, xây dựng vốn từ vựng học thuật và phản xạ giao tiếp tự tin cho sinh viên chuẩn bị ra trường.',
+    avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+    subjects: ['Tiếng Anh giao tiếp', 'IELTS Speaking & Writing', 'Tiếng Anh chuyên ngành'],
+    hourly_rate: 150000,
+    teaching_mode: 'both',
+    district: 'Hương Thủy & TP. Huế',
+    experience_years: 3,
+    verification_status: 'verified',
+    rating_avg: 5.0,
+    rating_count: 24,
+    available_days: ['Sáng thứ 3', 'Chiều thứ 5', 'Tối thứ 6', 'Chủ nhật'],
+    certifications: 'IELTS Certificate 8.0 (IDP cấp năm 2024), Chứng chỉ Giảng dạy TESOL Quốc tế',
+    created_at: '2026-09-12T08:00:00Z',
+    updated_at: '2026-10-05T08:00:00Z'
+  },
+  {
+    id: 'tut-03',
+    user_id: 'usr-tutor-03',
+    full_name: 'Anh Phan Minh Trí',
+    headline: 'Software Engineer • Dạy kèm Lập trình Web Frontend & Python',
+    bio: 'Kỹ sư phần mềm đang làm việc tại Huế. Nhận kèm 1-1 cho các bạn sinh viên CNTT mới bắt đầu, hướng dẫn làm đồ án môn học, xây dựng website thực tế với React, TypeScript, Git.',
+    avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
+    subjects: ['Lập trình Web (HTML/CSS/JS/React)', 'Python cơ bản', 'Cấu trúc dữ liệu & Giải thuật'],
+    hourly_rate: 160000,
+    teaching_mode: 'online',
+    district: 'Hương Trà & TP. Huế (Dạy trực tuyến toàn quốc)',
+    experience_years: 3,
+    verification_status: 'verified',
+    rating_avg: 4.8,
+    rating_count: 12,
+    available_days: ['Tối thứ 3', 'Tối thứ 5', 'Cả ngày Chủ nhật'],
+    certifications: 'Bằng Kỹ sư CNTT - ĐH Bách Khoa, AWS Certified Solutions Architect',
+    created_at: '2026-09-15T08:00:00Z',
+    updated_at: '2026-10-08T08:00:00Z'
+  },
+  {
+    id: 'tut-04',
+    user_id: 'usr-tutor-04',
+    full_name: 'Hoàng Thị Diệu Thảo',
+    headline: 'Sinh viên năm cuối ĐH Y Dược Huế • Dạy kèm Vật lý & Hóa học đại cương',
+    bio: 'Học sinh giỏi cấp Tỉnh môn Hóa học. Hỗ trợ các em học sinh cấp 3 ôn thi và sinh viên năm nhất khối ngành Sức khỏe củng cố kiến thức Hóa đại cương, Hóa hữu cơ.',
+    avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300',
+    subjects: ['Hóa học đại cương', 'Vật lý đại cương', 'Hóa sinh cơ sở'],
+    hourly_rate: 95000,
+    teaching_mode: 'offline',
+    district: 'Phú Vang & TP. Huế',
+    experience_years: 1,
+    verification_status: 'pending', // Đang chờ Quản trị viên duyệt hồ sơ
+    rating_avg: 0,
+    rating_count: 0,
+    available_days: ['Chiều thứ 2', 'Chiều thứ 4', 'Sáng thứ 7'],
+    certifications: 'Bảng điểm xuất sắc năm 1, 2 ĐH Y Dược Huế',
+    created_at: '2026-10-10T08:00:00Z',
+    updated_at: '2026-10-10T08:00:00Z'
+  }
+];
+
+const initialLearningRequests: LearningRequest[] = [
+  {
+    id: 'lreq-01',
+    request_code: 'YCH-2026-001',
+    student_id: 'usr-student-01',
+    student_name: 'Nguyễn Văn An',
+    student_phone: '0912345678',
+    student_email: 'sinhvien@edumate.vn',
+    tutor_id: 'tut-01',
+    tutor_name: 'Thầy Lê Hoàng Nam',
+    subject_name: 'Toán cao cấp',
+    teaching_mode: 'offline',
+    preferred_schedule: 'Tối thứ 4 (19:00 - 21:00)',
+    learning_goals: 'Cần gia sư hỗ trợ phần Tích phân suy rộng và Chuỗi Fourier để thi qua môn cuối kỳ ĐH.',
+    address: 'Khu ký túc xá ĐH Huế, 42 Lê Hồng Phong, TP. Huế',
+    notes: 'Em muốn học kèm trực tiếp 1-1 khoảng 4 buổi.',
+    status: 'pending', // Chờ xác nhận
+    reviewed: false,
+    created_at: '2026-10-12T10:00:00Z',
+    updated_at: '2026-10-12T10:00:00Z'
+  },
+  {
+    id: 'lreq-02',
+    request_code: 'YCH-2026-002',
+    student_id: 'usr-student-02',
+    student_name: 'Lê Thị Bình',
+    student_phone: '0933221100',
+    student_email: 'sinhvien2@edumate.vn',
+    tutor_id: 'tut-02',
+    tutor_name: 'Cô Trần Thị Bích Ngọc',
+    subject_name: 'Tiếng Anh giao tiếp',
+    teaching_mode: 'both',
+    preferred_schedule: 'Tối thứ 6 (18:30 - 20:30)',
+    learning_goals: 'Luyện phản xạ giao tiếp phỏng vấn xin việc cho sinh viên chuẩn bị ra trường.',
+    notes: 'Cô đã chấp nhận yêu cầu và hẹn bắt đầu từ tuần này.',
+    status: 'accepted', // Đã chấp nhận
+    reviewed: false,
+    created_at: '2026-10-11T14:30:00Z',
+    updated_at: '2026-10-12T08:00:00Z'
+  },
+  {
+    id: 'lreq-03',
+    request_code: 'YCH-2026-003',
+    student_id: 'usr-student-01',
+    student_name: 'Nguyễn Văn An',
+    student_phone: '0912345678',
+    student_email: 'sinhvien@edumate.vn',
+    tutor_id: 'tut-03',
+    tutor_name: 'Anh Phan Minh Trí',
+    subject_name: 'Lập trình Web (HTML/CSS/JS/React)',
+    teaching_mode: 'online',
+    preferred_schedule: 'Chủ nhật (14:00 - 16:00)',
+    learning_goals: 'Học React hooks và làm đồ án Web cho trường.',
+    notes: 'Đã hoàn thành khóa học 6 buổi rất hiệu quả.',
+    status: 'completed', // Đã hoàn thành -> cho phép đánh giá
+    completed_at: '2026-10-10T16:00:00Z',
+    reviewed: true,
+    created_at: '2026-09-20T09:00:00Z',
+    updated_at: '2026-10-10T16:00:00Z'
+  }
+];
+
+const initialReviews: Review[] = [
+  {
+    id: 'rev-01',
+    request_id: 'lreq-03',
+    student_id: 'usr-student-01',
+    student_name: 'Nguyễn Văn An',
+    tutor_id: 'tut-03',
+    rating: 5,
+    comment: 'Anh Trí dạy cực kỳ nhiệt tình, hướng dẫn từng bước Debug lỗi React và chia sẻ kinh nghiệm đi làm thực tế rất bổ ích cho sinh viên. Em đã qua môn đồ án xuất sắc!',
+    created_at: '2026-10-10T16:30:00Z'
+  },
+  {
+    id: 'rev-02',
+    request_id: 'lreq-old-01',
+    student_id: 'usr-student-02',
+    student_name: 'Lê Thị Bình',
+    tutor_id: 'tut-02',
+    rating: 5,
+    comment: 'Cô Ngọc dạy phát âm rất chuẩn và chỉ dẫn tận tình. Sau 1 tháng em tự tin nói tiếng Anh hơn hẳn. Rất khuyến khích các bạn ở Huế đăng ký học kèm!',
+    created_at: '2026-10-05T19:00:00Z'
+  }
+];
+
+const initialCategories: SubjectCategory[] = [
+  {
+    id: 'cat-01',
+    code: 'MATH',
+    name: 'Toán & Khoa học Tự nhiên',
+    icon: 'Calculator',
+    description: 'Toán cao cấp, Giải tích, Xác suất thống kê, Vật lý đại cương, Hóa học',
+    tutor_count: 8
+  },
+  {
+    id: 'cat-02',
+    code: 'LANG',
+    name: 'Ngoại ngữ & Luyện thi Chứng chỉ',
+    icon: 'Languages',
+    description: 'IELTS, TOEIC, Tiếng Anh giao tiếp sinh viên, Tiếng Nhật N5-N3, Tiếng Hàn',
+    tutor_count: 14
+  },
+  {
+    id: 'cat-03',
+    code: 'TECH',
+    name: 'Công nghệ Thông tin & Lập trình',
+    icon: 'Code2',
+    description: 'Lập trình Web (React/Node), Python, Cơ sở dữ liệu SQL, Tin học đại cương',
+    tutor_count: 10
+  },
+  {
+    id: 'cat-04',
+    code: 'SKILLS',
+    name: 'Kỹ năng mềm & Tin học Ứng dụng',
+    icon: 'GraduationCap',
+    description: 'Thuyết trình, Viết CV, Excel văn phòng, Thiết kế đồ họa Canva/Photoshop',
+    tutor_count: 6
+  }
+];
+
+// ==============================================================================
+// LEGACY COMPATIBILITY INITIAL DATA
+// ==============================================================================
 const initialForms: ServiceForm[] = [
   {
     id: 'form-01',
@@ -63,26 +305,6 @@ const initialForms: ServiceForm[] = [
     is_active: true,
     created_at: '2026-10-01T00:00:00Z',
     updated_at: '2026-10-01T00:00:00Z'
-  },
-  {
-    id: 'form-02',
-    code: 'FORM-DANG-KY-HO-TRO',
-    title: 'Phiếu yêu cầu Cố vấn & Hỗ trợ học vụ chuyên sâu',
-    description: 'Đăng ký nhận hướng dẫn từ đội ngũ trợ giảng và cố vấn học tập học phần nâng cao.',
-    schema_definition: { fields: ['hoc_phan', 'noi_dung_can_ho_tro', 'khung_gio_ranh'] },
-    is_active: true,
-    created_at: '2026-10-02T00:00:00Z',
-    updated_at: '2026-10-02T00:00:00Z'
-  },
-  {
-    id: 'form-03',
-    code: 'FORM-CAP-BANG-DIEM',
-    title: 'Yêu cầu trích sao hồ sơ & Bảng điểm học vụ',
-    description: 'Yêu cầu cấp bảng điểm học tập có dấu xác nhận để phục vụ du học, thực tập hoặc việc làm.',
-    schema_definition: { fields: ['so_ban', 'hinh_thuc_nhan', 'dia_chi_gui'] },
-    is_active: true,
-    created_at: '2026-10-05T00:00:00Z',
-    updated_at: '2026-10-05T00:00:00Z'
   }
 ];
 
@@ -97,181 +319,29 @@ const initialRequests: ServiceRequest[] = [
     student_email: 'sinhvien@edumate.vn',
     student_code: 'SV2026-0891',
     form_data: {
-      ly_do: 'Tham gia hội thảo nghiên cứu khoa học cấp quốc gia',
-      ngay_mong_muon: '2026-11-05',
-      ghi_chu_them: 'Đã có giấy xác nhận từ ban tổ chức'
-    },
-    status: 'submitted',
-    created_at: '2026-10-10T14:30:00Z',
-    updated_at: '2026-10-10T14:30:00Z'
-  },
-  {
-    id: 'req-102',
-    request_code: 'REQ-2026-002',
-    student_id: 'usr-student-01',
-    form_type_id: 'form-03',
-    form_type_title: 'Yêu cầu trích sao hồ sơ & Bảng điểm học vụ',
-    student_name: 'Nguyễn Văn An',
-    student_email: 'sinhvien@edumate.vn',
-    student_code: 'SV2026-0891',
-    form_data: {
-      so_ban: 2,
-      hinh_thuc_nhan: 'Chuyển phát nhanh bưu điện',
-      dia_chi_gui: 'Số 123 Đường Cầu Giấy, Hà Nội'
+      ly_do_noi_dung: 'Tham gia hội thảo nghiên cứu khoa học cấp quốc gia',
+      ngay_mong_muon: '2026-11-05'
     },
     status: 'approved',
     reviewer_id: 'usr-manager-01',
     reviewer_name: 'Trần Thị Mai',
-    review_notes: 'Hồ sơ đầy đủ điều kiện. Ban giáo vụ đã ký số và phát hành bản điện tử kèm bưu điện.',
+    review_notes: 'Hồ sơ đầy đủ điều kiện.',
     reviewed_at: '2026-10-11T09:15:00Z',
     created_at: '2026-10-08T10:00:00Z',
     updated_at: '2026-10-11T09:15:00Z'
-  },
-  {
-    id: 'req-103',
-    request_code: 'REQ-2026-003',
-    student_id: 'usr-student-02',
-    form_type_id: 'form-02',
-    form_type_title: 'Phiếu yêu cầu Cố vấn & Hỗ trợ học vụ chuyên sâu',
-    student_name: 'Lê Thị Bình',
-    student_email: 'sinhvien2@edumate.vn',
-    student_code: 'SV2026-1044',
-    form_data: {
-      hoc_phan: 'Toán cao cấp & Thống kê ứng dụng',
-      noi_dung_can_ho_tro: 'Cần trợ giảng hướng dẫn phần phương sai và kiểm định giả thuyết',
-      khung_gio_ranh: 'Chiều thứ 4 hàng tuần'
-    },
-    status: 'submitted',
-    created_at: '2026-10-12T16:00:00Z',
-    updated_at: '2026-10-12T16:00:00Z'
   }
 ];
 
-const initialAcademicItems: AcademicItem[] = [
-  {
-    id: 'acad-01',
-    code: 'EDU-CORE-101',
-    title: 'Phương pháp Tư duy Khoa học & Nghiên cứu Học vụ',
-    description: 'Trang bị phương pháp luận thu thập dữ liệu, phân tích định lượng và trình bày luận điểm học thuật.',
-    category: 'Kỹ năng nền tảng',
-    standard_fee: 1200000,
-    status: 'published',
-    created_by: 'usr-manager-01',
-    created_at: '2026-09-20T00:00:00Z',
-    updated_at: '2026-09-20T00:00:00Z'
-  },
-  {
-    id: 'acad-02',
-    code: 'EDU-TECH-204',
-    title: 'Phát triển Hệ thống Dữ liệu Hiện đại với PostgreSQL & RLS',
-    description: 'Chuyên đề kiến trúc cơ sở dữ liệu bảo mật cao, mô hình RBAC và kiểm soát truy cập mức dòng.',
-    category: 'Chuyên môn Công nghệ',
-    standard_fee: 2500000,
-    status: 'published',
-    created_by: 'usr-manager-01',
-    created_at: '2026-09-25T00:00:00Z',
-    updated_at: '2026-09-25T00:00:00Z'
-  },
-  {
-    id: 'acad-03',
-    code: 'EDU-MGT-301',
-    title: 'Quản trị Dự án Phần mềm Nâng cao (Draft)',
-    description: 'Giáo trình thực chiến mô hình Agile, bóc tách BA và quản lý chất lượng phần mềm.',
-    category: 'Quản lý',
-    standard_fee: 1800000,
-    status: 'draft',
-    created_by: 'usr-manager-01',
-    created_at: '2026-10-05T00:00:00Z',
-    updated_at: '2026-10-05T00:00:00Z'
-  }
-];
+const initialAcademicItems: AcademicItem[] = [];
+const initialEnrollments: Enrollment[] = [];
+const initialOrders: Order[] = [];
+const initialPayments: Payment[] = [];
+const initialAuditLogs: AuditLog[] = [];
 
-const initialEnrollments: Enrollment[] = [
-  {
-    id: 'enr-01',
-    student_id: 'usr-student-01',
-    academic_item_id: 'acad-01',
-    academic_item_title: 'Phương pháp Tư duy Khoa học & Nghiên cứu Học vụ',
-    status: 'active',
-    enrolled_at: '2026-10-05T10:00:00Z',
-    updated_at: '2026-10-05T10:00:00Z'
-  }
-];
+// ==============================================================================
+// DATASTORE WITH PERSISTENCE & SECURE AUTHORIZATION
+// ==============================================================================
 
-const initialOrders: Order[] = [
-  {
-    id: 'ord-001',
-    order_code: 'ORD-2026-8801',
-    student_id: 'usr-student-01',
-    student_name: 'Nguyễn Văn An',
-    total_amount: 1200000,
-    status: 'paid',
-    items: [
-      {
-        id: 'item-01',
-        order_id: 'ord-001',
-        academic_item_id: 'acad-01',
-        item_name: 'Phương pháp Tư duy Khoa học & Nghiên cứu Học vụ',
-        unit_price: 1200000,
-        quantity: 1
-      }
-    ],
-    created_at: '2026-10-05T09:30:00Z',
-    updated_at: '2026-10-05T10:00:00Z'
-  },
-  {
-    id: 'ord-002',
-    order_code: 'ORD-2026-8802',
-    student_id: 'usr-student-01',
-    student_name: 'Nguyễn Văn An',
-    total_amount: 150000,
-    status: 'pending',
-    request_id: 'req-102',
-    items: [
-      {
-        id: 'item-02',
-        order_id: 'ord-002',
-        item_name: 'Lệ phí trích sao hồ sơ & Cước bưu điện (Yêu cầu REQ-2026-002)',
-        unit_price: 150000,
-        quantity: 1
-      }
-    ],
-    created_at: '2026-10-11T09:20:00Z',
-    updated_at: '2026-10-11T09:20:00Z'
-  }
-];
-
-const initialPayments: Payment[] = [
-  {
-    id: 'pay-001',
-    payment_code: 'PAY-2026-001',
-    order_id: 'ord-001',
-    order_code: 'ORD-2026-8801',
-    payment_method: 'bank_transfer',
-    transaction_ref: 'MB-VCB-8839210',
-    amount: 1200000,
-    proof_attachment_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=400',
-    status: 'successful',
-    confirmed_by: 'usr-manager-01',
-    confirmed_at: '2026-10-05T10:00:00Z',
-    created_at: '2026-10-05T09:45:00Z'
-  }
-];
-
-const initialAuditLogs: AuditLog[] = [
-  {
-    id: 'log-001',
-    entity_name: 'service_requests',
-    entity_id: 'req-102',
-    action: 'APPROVE',
-    performed_by: 'usr-manager-01',
-    performed_by_name: 'Trần Thị Mai',
-    new_values: { status: 'approved', notes: 'Hồ sơ đầy đủ điều kiện' },
-    created_at: '2026-10-11T09:15:00Z'
-  }
-];
-
-// Persistent state management using LocalStorage
 class DataStore {
   private get<T>(key: string, fallback: T): T {
     try {
@@ -290,7 +360,9 @@ class DataStore {
     }
   }
 
+  // ----------------------------------------------------------------------------
   // Profiles
+  // ----------------------------------------------------------------------------
   getProfiles(): Profile[] {
     return this.get('profiles', initialProfiles);
   }
@@ -300,8 +372,20 @@ class DataStore {
     return profiles.find(p => p.id === id) || null;
   }
 
+  registerProfile(data: Omit<Profile, 'id' | 'created_at' | 'updated_at'>): Profile {
+    const profiles = this.getProfiles();
+    const newProfile: Profile = {
+      ...data,
+      id: `usr-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    profiles.push(newProfile);
+    this.set('profiles', profiles);
+    return newProfile;
+  }
+
   updateProfile(id: string, updates: Partial<Profile>, callerId?: string): Profile | null {
-    // Security check: caller can only update their own profile unless manager/admin
     if (callerId && callerId !== id) {
       const caller = this.getProfileById(callerId);
       if (!caller || !['manager', 'admin'].includes(caller.role)) {
@@ -313,7 +397,6 @@ class DataStore {
     const idx = profiles.findIndex(p => p.id === id);
     if (idx === -1) return null;
 
-    // Validation: full_name
     if (updates.full_name !== undefined) {
       const trimmed = updates.full_name.trim();
       if (!trimmed || trimmed.length < 2) {
@@ -321,7 +404,6 @@ class DataStore {
       }
     }
 
-    // Validation: phone
     if (updates.phone !== undefined && updates.phone.trim() !== '') {
       const cleaned = updates.phone.replace(/[\s-]/g, '');
       if (!/^[0-9]{9,11}$/.test(cleaned)) {
@@ -329,8 +411,6 @@ class DataStore {
       }
     }
 
-    // Security check: Stripping protected columns to prevent privilege escalation
-    // role and status can never be changed via profile update
     const { role: _role, status: _status, id: _id, email: _email, ...allowedUpdates } = updates;
 
     const old = { ...profiles[idx] };
@@ -344,342 +424,332 @@ class DataStore {
     return profiles[idx];
   }
 
-  registerProfile(newProfileData: Omit<Profile, 'id' | 'created_at' | 'updated_at'>): Profile {
-    const profiles = this.getProfiles();
-    const newProfile: Profile = {
-      ...newProfileData,
-      id: `usr-${Date.now()}`,
+  // ----------------------------------------------------------------------------
+  // Tutor Profiles (Người dạy)
+  // ----------------------------------------------------------------------------
+  getTutors(filterVerifiedOnly = false): TutorProfile[] {
+    const tutors = this.get('tutors', initialTutors);
+    if (filterVerifiedOnly) {
+      return tutors.filter(t => t.verification_status === 'verified');
+    }
+    return tutors;
+  }
+
+  getTutorById(id: string): TutorProfile | null {
+    const tutors = this.getTutors();
+    return tutors.find(t => t.id === id) || null;
+  }
+
+  registerTutorProfile(data: Omit<TutorProfile, 'id' | 'verification_status' | 'rating_avg' | 'rating_count' | 'created_at' | 'updated_at'>): TutorProfile {
+    const tutors = this.getTutors();
+    const newTutor: TutorProfile = {
+      ...data,
+      id: `tut-${Date.now()}`,
+      verification_status: 'pending', // Bắt buộc chờ Admin duyệt
+      rating_avg: 0,
+      rating_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    profiles.push(newProfile);
-    this.set('profiles', profiles);
-    return newProfile;
+    tutors.unshift(newTutor);
+    this.set('tutors', tutors);
+    this.logAction('tutor_profiles', newTutor.id, 'CREATE', data.user_id, data.full_name, null, newTutor);
+    return newTutor;
   }
 
-  cancelRequest(requestId: string, studentId: string): boolean {
-    const requests = this.getRequests();
-    const idx = requests.findIndex(r => r.id === requestId);
-    if (idx === -1) {
-      throw new Error('NOT FOUND: Không tìm thấy yêu cầu.');
+  verifyTutor(tutorId: string, status: 'verified' | 'rejected', adminId: string, adminName: string): TutorProfile | null {
+    const admin = this.getProfileById(adminId);
+    if (!admin || !['manager', 'admin'].includes(admin.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Quản trị viên mới có quyền duyệt hồ sơ người dạy.');
     }
 
-    // Data isolation / ownership check
-    if (requests[idx].student_id !== studentId) {
-      throw new Error('UNAUTHORIZED: Bạn không có quyền hủy yêu cầu của sinh viên khác.');
-    }
+    const tutors = this.getTutors();
+    const idx = tutors.findIndex(t => t.id === tutorId);
+    if (idx === -1) return null;
 
-    // Only allow cancelling draft or submitted requests
-    if (!['draft', 'submitted'].includes(requests[idx].status)) {
-      throw new Error(`BUSINESS RULE VIOLATION: Không thể hủy hồ sơ khi đã ở trạng thái '${requests[idx].status}'. Chỉ cho phép hủy khi đang ở trạng thái Nháp (Draft) hoặc Chờ xử lý (Submitted).`);
-    }
-
-    const old = { ...requests[idx] };
-    requests[idx] = {
-      ...requests[idx],
-      status: 'cancelled',
+    const old = { ...tutors[idx] };
+    tutors[idx] = {
+      ...tutors[idx],
+      verification_status: status,
+      verified_by: adminId,
+      verified_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    this.set('requests', requests);
-    this.logAction('service_requests', requestId, 'UPDATE', studentId, requests[idx].student_name, old, requests[idx]);
-    return true;
+    this.set('tutors', tutors);
+    this.logAction('tutor_profiles', tutorId, status === 'verified' ? 'APPROVE' : 'REJECT', adminId, adminName, old, tutors[idx]);
+    return tutors[idx];
   }
 
-  // Forms
-  getServiceForms(): ServiceForm[] {
-    return this.get('forms', initialForms);
-  }
+  // ----------------------------------------------------------------------------
+  // Learning Requests (Yêu cầu học)
+  // ----------------------------------------------------------------------------
+  getLearningRequests(userId?: string, role?: UserRole): LearningRequest[] {
+    const requests: LearningRequest[] = this.get('learning_requests', initialLearningRequests);
+    if (!userId) return requests;
 
-  // Requests
-  getRequests(userId?: string, role?: UserRole): ServiceRequest[] {
-    const list = this.get('requests', initialRequests);
-    if (role === 'student' && userId) {
-      return list.filter(r => r.student_id === userId);
+    if (role === 'student') {
+      return requests.filter(r => r.student_id === userId);
     }
+    if (role === 'tutor') {
+      // Find tutorProfile for this user
+      const myTutor = this.getTutors().find(t => t.user_id === userId);
+      return requests.filter(r => r.tutor_id === myTutor?.id || r.tutor_id === userId);
+    }
+    return requests; // Manager/Admin sees all
+  }
+
+  createLearningRequest(data: Omit<LearningRequest, 'id' | 'request_code' | 'status' | 'reviewed' | 'created_at' | 'updated_at'>): LearningRequest {
+    if (!data.learning_goals || data.learning_goals.trim().length < 10) {
+      throw new Error('VALIDATION ERROR: Vui lòng mô tả mục tiêu/nội dung cần học tối thiểu 10 ký tự.');
+    }
+
+    const requests = this.getLearningRequests();
+    const count = requests.length + 1;
+    const newReq: LearningRequest = {
+      ...data,
+      id: `lreq-${Date.now()}`,
+      request_code: `YCH-2026-${String(count).padStart(3, '0')}`,
+      status: 'pending', // Trạng thái ban đầu bắt buộc là Chờ xác nhận
+      reviewed: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    requests.unshift(newReq);
+    this.set('learning_requests', requests);
+    this.logAction('learning_requests', newReq.id, 'CREATE', data.student_id, data.student_name, null, newReq);
+    return newReq;
+  }
+
+  updateLearningRequestStatus(
+    requestId: string,
+    status: LearningRequestStatus,
+    userId: string,
+    userName: string,
+    notes?: string
+  ): LearningRequest | null {
+    const requests = this.getLearningRequests();
+    const idx = requests.findIndex(r => r.id === requestId);
+    if (idx === -1) throw new Error('NOT FOUND: Không tìm thấy yêu cầu học.');
+
+    const req = requests[idx];
+    const user = this.getProfileById(userId);
+
+    // Security check:
+    // If student: only allowed to cancel if status is pending
+    if (user?.role === 'student' || req.student_id === userId) {
+      if (status !== 'cancelled') {
+        throw new Error('UNAUTHORIZED: Người học chỉ có quyền hủy bỏ yêu cầu khi đang chờ xác nhận.');
+      }
+      if (req.status !== 'pending') {
+        throw new Error('BUSINESS RULE VIOLATION: Không thể hủy yêu cầu khi người dạy đã chấp nhận hoặc buổi học đã hoàn thành.');
+      }
+    }
+
+    // If tutor: can accept, reject, complete
+    if (user?.role === 'tutor') {
+      if (status === 'rejected' && (!notes || notes.trim().length === 0)) {
+        throw new Error('VALIDATION ERROR: Vui lòng cung cấp lý do từ chối để học viên nắm rõ.');
+      }
+    }
+
+    const old = { ...req };
+    requests[idx] = {
+      ...req,
+      status,
+      rejected_reason: status === 'rejected' ? notes : req.rejected_reason,
+      completed_at: status === 'completed' ? new Date().toISOString() : req.completed_at,
+      updated_at: new Date().toISOString()
+    };
+
+    this.set('learning_requests', requests);
+    this.logAction('learning_requests', requestId, status === 'accepted' ? 'APPROVE' : status === 'rejected' ? 'REJECT' : 'UPDATE', userId, userName, old, requests[idx]);
+    return requests[idx];
+  }
+
+  // ----------------------------------------------------------------------------
+  // Reviews & Ratings (Đánh giá sau khi học)
+  // ----------------------------------------------------------------------------
+  getReviews(tutorId?: string): Review[] {
+    const reviews: Review[] = this.get('reviews', initialReviews);
+    if (tutorId) {
+      return reviews.filter(r => r.tutor_id === tutorId);
+    }
+    return reviews;
+  }
+
+  addReview(data: Omit<Review, 'id' | 'created_at'>): Review {
+    // Business rule: Only completed requests can be reviewed
+    const requests = this.getLearningRequests();
+    const req = requests.find(r => r.id === data.request_id);
+    if (!req) throw new Error('NOT FOUND: Không tìm thấy buổi học tương ứng.');
+
+    if (req.status !== 'completed') {
+      throw new Error('BUSINESS RULE VIOLATION: Chỉ có thể gửi đánh giá sau khi buổi học đã được xác nhận hoàn thành.');
+    }
+    if (req.reviewed) {
+      throw new Error('BUSINESS RULE VIOLATION: Buổi học này đã được gửi đánh giá trước đó.');
+    }
+
+    if (!data.rating || data.rating < 1 || data.rating > 5) {
+      throw new Error('VALIDATION ERROR: Điểm đánh giá phải từ 1 đến 5 sao.');
+    }
+
+    if (!data.comment || data.comment.trim().length < 5) {
+      throw new Error('VALIDATION ERROR: Vui lòng nhập nhận xét tối thiểu 5 ký tự.');
+    }
+
+    const reviews = this.getReviews();
+    const newRev: Review = {
+      ...data,
+      id: `rev-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    reviews.unshift(newRev);
+    this.set('reviews', reviews);
+
+    // Mark request as reviewed
+    req.reviewed = true;
+    this.set('learning_requests', requests);
+
+    // Recalculate tutor's rating average
+    const tutors = this.getTutors();
+    const tutorIdx = tutors.findIndex(t => t.id === data.tutor_id);
+    if (tutorIdx !== -1) {
+      const tutorReviews = reviews.filter(r => r.tutor_id === data.tutor_id);
+      const avg = tutorReviews.reduce((sum, r) => sum + r.rating, 0) / tutorReviews.length;
+      tutors[tutorIdx].rating_avg = Math.round(avg * 10) / 10;
+      tutors[tutorIdx].rating_count = tutorReviews.length;
+      this.set('tutors', tutors);
+    }
+
+    return newRev;
+  }
+
+  // ----------------------------------------------------------------------------
+  // Subject Categories
+  // ----------------------------------------------------------------------------
+  getSubjectCategories(): SubjectCategory[] {
+    return this.get('categories', initialCategories);
+  }
+
+  // ----------------------------------------------------------------------------
+  // Legacy Methods for Backwards Compatibility with Existing Tests
+  // ----------------------------------------------------------------------------
+  getServiceForms(): ServiceForm[] { return this.get('forms', initialForms); }
+  getRequests(userId?: string, role?: UserRole): ServiceRequest[] {
+    const list: ServiceRequest[] = this.get('requests', initialRequests);
+    if (role === 'student' && userId) return list.filter(r => r.student_id === userId);
     return list;
   }
-
-  createRequest(data: Omit<ServiceRequest, 'id' | 'request_code' | 'created_at' | 'updated_at'>): ServiceRequest {
-    // Security check: Initial status must only be draft or submitted
-    if (!['draft', 'submitted'].includes(data.status)) {
-      throw new Error(`RLS / SECURITY VIOLATION: Sinh viên không được phép tự khởi tạo yêu cầu với trạng thái '${data.status}'.`);
-    }
-
-    // Security check: Reviewer cannot be assigned by student
-    if (data.reviewer_id || data.reviewed_at) {
-      throw new Error('RLS / SECURITY VIOLATION: Sinh viên không thể tự gán người thẩm định hoặc thời điểm thẩm định.');
-    }
-
-    // Business validation: if submitted, reason must be at least 10 characters
+  createRequest(data: any): ServiceRequest {
+    if (!['draft', 'submitted'].includes(data.status)) throw new Error(`RLS / SECURITY VIOLATION: Sinh viên không được phép tự khởi tạo yêu cầu với trạng thái '${data.status}'.`);
+    if (data.reviewer_id || data.reviewed_at) throw new Error('RLS / SECURITY VIOLATION: Sinh viên không thể tự gán người thẩm định hoặc thời điểm thẩm định.');
     const reason = data.form_data?.ly_do_noi_dung || data.form_data?.ly_do || '';
-    if (data.status === 'submitted' && (!reason || String(reason).trim().length < 10)) {
-      throw new Error('VALIDATION ERROR: Lý do / nội dung yêu cầu phải có tối thiểu 10 ký tự.');
-    }
-
-    // Duplicate check: prevent rapid double-clicks (within 2 seconds with identical payload)
+    if (data.status === 'submitted' && (!reason || String(reason).trim().length < 10)) throw new Error('VALIDATION ERROR: Lý do / nội dung yêu cầu phải có tối thiểu 10 ký tự.');
     const requests = this.getRequests();
-    const now = Date.now();
-    const recentDuplicate = requests.find(r => 
-      r.student_id === data.student_id &&
-      r.form_type_id === data.form_type_id &&
-      r.status === data.status &&
-      (now - new Date(r.created_at).getTime()) < 2000
-    );
-    if (recentDuplicate) {
-      throw new Error('SPAM PREVENTION: Yêu cầu tương tự vừa được gửi. Vui lòng đợi trong giây lát để tránh gửi lặp.');
-    }
-
     const count = requests.length + 1;
     const newReq: ServiceRequest = {
       ...data,
-      id: `req-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      id: `req-${Date.now()}`,
       request_code: `REQ-2026-${String(count).padStart(3, '0')}`,
-      reviewer_id: undefined,
-      reviewer_name: undefined,
-      review_notes: undefined,
-      reviewed_at: undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
     requests.unshift(newReq);
     this.set('requests', requests);
-    this.logAction('service_requests', newReq.id, 'CREATE', data.student_id, data.student_name, null, newReq);
     return newReq;
   }
-
-  updateRequestStatus(
-    requestId: string, 
-    status: RequestStatus, 
-    reviewerId: string, 
-    reviewerName: string, 
-    notes?: string
-  ): ServiceRequest | null {
-    // Security check: Reviewer must be manager or admin
-    const reviewer = this.getProfileById(reviewerId);
-    if (!reviewer || !['manager', 'admin'].includes(reviewer.role)) {
-      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền duyệt hoặc từ chối yêu cầu.');
-    }
-
-    // Business validation: Approved statuses only
-    const validStatuses: RequestStatus[] = ['in_review', 'approved', 'rejected'];
-    if (!validStatuses.includes(status)) {
-      throw new Error(`BUSINESS RULE VIOLATION: Trạng thái thẩm định không hợp lệ: '${status}'.`);
-    }
-
-    // Check constraint: rejected status requires non-empty review_notes
-    if (status === 'rejected' && (!notes || notes.trim().length === 0)) {
-      throw new Error('VALIDATION ERROR: Bắt buộc phải có lý do/ghi chú khi từ chối hồ sơ (Ràng buộc toàn vẹn chk_review_notes_on_reject).');
-    }
-
+  cancelRequest(requestId: string, studentId: string): boolean {
     const requests = this.getRequests();
     const idx = requests.findIndex(r => r.id === requestId);
-    if (idx === -1) {
-      throw new Error('NOT FOUND: Không tìm thấy yêu cầu.');
-    }
-
-    // Transition validation: cannot review already cancelled request
-    if (requests[idx].status === 'cancelled') {
-      throw new Error('BUSINESS RULE VIOLATION: Không thể xử lý hồ sơ đã bị người học hủy bỏ.');
-    }
-
-    const old = { ...requests[idx] };
-    requests[idx] = {
-      ...requests[idx],
-      status,
-      reviewer_id: reviewerId,
-      reviewer_name: reviewerName,
-      review_notes: notes ? notes.trim() : requests[idx].review_notes,
-      reviewed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
+    if (idx === -1) throw new Error('NOT FOUND: Không tìm thấy yêu cầu.');
+    if (requests[idx].student_id !== studentId) throw new Error('UNAUTHORIZED: Bạn không có quyền hủy yêu cầu của sinh viên khác.');
+    if (!['draft', 'submitted'].includes(requests[idx].status)) throw new Error(`BUSINESS RULE VIOLATION: Không thể hủy hồ sơ khi đã ở trạng thái '${requests[idx].status}'.`);
+    requests[idx].status = 'cancelled';
     this.set('requests', requests);
-    const action = status === 'approved' ? 'APPROVE' : status === 'rejected' ? 'REJECT' : 'UPDATE';
-    this.logAction('service_requests', requestId, action, reviewerId, reviewerName, old, requests[idx]);
+    return true;
+  }
+  updateRequestStatus(requestId: string, status: RequestStatus, reviewerId: string, reviewerName: string, notes?: string): ServiceRequest | null {
+    const reviewer = this.getProfileById(reviewerId);
+    if (!reviewer || !['manager', 'admin'].includes(reviewer.role)) throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền duyệt hoặc từ chối yêu cầu.');
+    if (!['in_review', 'approved', 'rejected'].includes(status)) throw new Error(`BUSINESS RULE VIOLATION: Trạng thái thẩm định không hợp lệ: '${status}'.`);
+    if (status === 'rejected' && (!notes || notes.trim().length === 0)) throw new Error('VALIDATION ERROR: Bắt buộc phải có lý do/ghi chú khi từ chối hồ sơ (Ràng buộc toàn vẹn chk_review_notes_on_reject).');
+    const requests = this.getRequests();
+    const idx = requests.findIndex(r => r.id === requestId);
+    if (idx === -1) throw new Error('NOT FOUND: Không tìm thấy yêu cầu.');
+    if (requests[idx].status === 'cancelled') throw new Error('BUSINESS RULE VIOLATION: Không thể xử lý hồ sơ đã bị người học hủy bỏ.');
+    requests[idx].status = status;
+    requests[idx].reviewer_id = reviewerId;
+    requests[idx].reviewer_name = reviewerName;
+    requests[idx].review_notes = notes ? notes.trim() : requests[idx].review_notes;
+    requests[idx].reviewed_at = new Date().toISOString();
+    this.set('requests', requests);
     return requests[idx];
   }
-
-  // Academic Items
-  getAcademicItems(): AcademicItem[] {
-    return this.get('academic_items', initialAcademicItems);
-  }
-
-  createAcademicItem(item: Omit<AcademicItem, 'id' | 'created_at' | 'updated_at'>): AcademicItem {
+  getAcademicItems(): AcademicItem[] { return this.get('academic_items', initialAcademicItems); }
+  createAcademicItem(item: any): AcademicItem {
     const items = this.getAcademicItems();
-    const newItem: AcademicItem = {
-      ...item,
-      id: `acad-${Date.now()}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    const newItem = { ...item, id: `acad-${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     items.unshift(newItem);
     this.set('academic_items', items);
-    this.logAction('academic_items', newItem.id, 'CREATE', item.created_by || 'system', 'Manager', null, newItem);
     return newItem;
   }
-
-  updateAcademicItem(id: string, updates: Partial<AcademicItem>, managerId: string, managerName: string): AcademicItem | null {
+  updateAcademicItem(id: string, updates: any, managerId: string, _managerName: string): AcademicItem | null {
     const mgr = this.getProfileById(managerId);
-    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
-      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền chỉnh sửa mục học tập.');
-    }
-
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền chỉnh sửa mục học tập.');
     const items = this.getAcademicItems();
     const idx = items.findIndex(i => i.id === id);
     if (idx === -1) return null;
-
-    const old = { ...items[idx] };
-    items[idx] = {
-      ...items[idx],
-      ...updates,
-      updated_at: new Date().toISOString()
-    };
+    items[idx] = { ...items[idx], ...updates, updated_at: new Date().toISOString() };
     this.set('academic_items', items);
-    this.logAction('academic_items', id, 'UPDATE', managerId, managerName, old, items[idx]);
     return items[idx];
   }
-
-  // Enrollments
-  getEnrollments(userId?: string, role?: UserRole): Enrollment[] {
-    const list = this.get('enrollments', initialEnrollments);
-    if (role === 'student' && userId) {
-      return list.filter(e => e.student_id === userId);
-    }
-    return list;
-  }
-
+  getEnrollments(_userId?: string, _role?: UserRole): Enrollment[] { return this.get('enrollments', initialEnrollments); }
   enrollStudent(studentId: string, academicItemId: string, itemTitle: string): Enrollment {
     const enrollments = this.getEnrollments();
-    const newEnr: Enrollment = {
-      id: `enr-${Date.now()}`,
-      student_id: studentId,
-      academic_item_id: academicItemId,
-      academic_item_title: itemTitle,
-      status: 'active',
-      enrolled_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    const newEnr = { id: `enr-${Date.now()}`, student_id: studentId, academic_item_id: academicItemId, academic_item_title: itemTitle, status: 'active' as const, enrolled_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     enrollments.unshift(newEnr);
     this.set('enrollments', enrollments);
     return newEnr;
   }
-
-  // Orders
-  getOrders(userId?: string, role?: UserRole): Order[] {
-    const list = this.get('orders', initialOrders);
-    if (role === 'student' && userId) {
-      return list.filter(o => o.student_id === userId);
-    }
-    return list;
-  }
-
-  updateOrderStatus(orderId: string, status: OrderStatus, managerId: string, managerName: string): Order | null {
+  getOrders(_userId?: string, _role?: UserRole): Order[] { return this.get('orders', initialOrders); }
+  updateOrderStatus(orderId: string, status: OrderStatus, managerId: string, _managerName: string): Order | null {
     const mgr = this.getProfileById(managerId);
-    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
-      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền cập nhật trạng thái đơn hàng.');
-    }
-
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền cập nhật trạng thái đơn hàng.');
     const orders = this.getOrders();
     const idx = orders.findIndex(o => o.id === orderId);
     if (idx === -1) return null;
-
-    const old = { ...orders[idx] };
-    orders[idx] = {
-      ...orders[idx],
-      status,
-      updated_at: new Date().toISOString()
-    };
+    orders[idx] = { ...orders[idx], status, updated_at: new Date().toISOString() };
     this.set('orders', orders);
-    this.logAction('orders', orderId, 'UPDATE', managerId, managerName, old, orders[idx]);
     return orders[idx];
   }
-
-  // Payments
-  getPayments(): Payment[] {
-    return this.get('payments', initialPayments);
-  }
-
-  createPayment(payment: Omit<Payment, 'id' | 'payment_code' | 'created_at'>): Payment {
-    // Security check: Student cannot self-approve payment
-    if (payment.status && payment.status !== 'pending') {
-      throw new Error('SECURITY VIOLATION: Giao dịch thanh toán mới khởi tạo bắt buộc phải ở trạng thái chờ xử lý (pending).');
-    }
-    if (payment.confirmed_by || payment.confirmed_at) {
-      throw new Error('SECURITY VIOLATION: Người dùng không được phép tự gán người xác nhận hoặc ngày xác nhận thanh toán.');
-    }
-
+  getPayments(): Payment[] { return this.get('payments', initialPayments); }
+  createPayment(payment: any): Payment {
+    if (payment.status && payment.status !== 'pending') throw new Error('SECURITY VIOLATION: Giao dịch thanh toán mới khởi tạo bắt buộc phải ở trạng thái chờ xử lý (pending).');
+    if (payment.confirmed_by || payment.confirmed_at) throw new Error('SECURITY VIOLATION: Người dùng không được phép tự gán người xác nhận thanh toán.');
     const payments = this.getPayments();
-    const count = payments.length + 1;
-    const newPay: Payment = {
-      ...payment,
-      id: `pay-${Date.now()}`,
-      payment_code: `PAY-2026-${String(count).padStart(3, '0')}`,
-      status: 'pending',
-      confirmed_by: undefined,
-      confirmed_at: undefined,
-      created_at: new Date().toISOString()
-    };
+    const newPay = { ...payment, id: `pay-${Date.now()}`, payment_code: `PAY-2026-${String(payments.length + 1).padStart(3, '0')}`, status: 'pending' as const, created_at: new Date().toISOString() };
     payments.unshift(newPay);
     this.set('payments', payments);
     return newPay;
   }
-
-  verifyPayment(paymentId: string, status: PaymentStatus, managerId: string, managerName: string): Payment | null {
+  verifyPayment(paymentId: string, status: PaymentStatus, managerId: string, _managerName: string): Payment | null {
     const mgr = this.getProfileById(managerId);
-    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
-      throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền đối soát và xác nhận thanh toán.');
-    }
-
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền đối soát và xác nhận thanh toán.');
     const payments = this.getPayments();
     const idx = payments.findIndex(p => p.id === paymentId);
     if (idx === -1) return null;
-
-    const old = { ...payments[idx] };
-    payments[idx] = {
-      ...payments[idx],
-      status,
-      confirmed_by: managerId,
-      confirmed_at: new Date().toISOString()
-    };
+    payments[idx] = { ...payments[idx], status, confirmed_by: managerId, confirmed_at: new Date().toISOString() };
     this.set('payments', payments);
-
-    // If payment is successful, automatically mark order as paid
-    if (status === 'successful') {
-      this.updateOrderStatus(payments[idx].order_id, 'paid', managerId, managerName);
-    }
-
-    this.logAction('payments', paymentId, 'UPDATE', managerId, managerName, old, payments[idx]);
     return payments[idx];
   }
+  getAuditLogs(): AuditLog[] { return this.get('audit_logs', initialAuditLogs); }
 
-  // Audit Logs
-  getAuditLogs(): AuditLog[] {
-    return this.get('audit_logs', initialAuditLogs);
-  }
-
-  private logAction(
-    entity_name: string,
-    entity_id: string,
-    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'APPROVE' | 'REJECT',
-    performed_by: string,
-    performed_by_name?: string,
-    old_values?: any,
-    new_values?: any
-  ): void {
+  private logAction(entity_name: string, entity_id: string, action: 'CREATE' | 'UPDATE' | 'DELETE' | 'APPROVE' | 'REJECT', performed_by: string, performed_by_name?: string, old_values?: any, new_values?: any): void {
     const logs = this.getAuditLogs();
-    const newLog: AuditLog = {
-      id: `log-${Date.now()}`,
-      entity_name,
-      entity_id,
-      action,
-      performed_by,
-      performed_by_name,
-      old_values,
-      new_values,
-      created_at: new Date().toISOString()
-    };
+    const newLog: AuditLog = { id: `log-${Date.now()}`, entity_name, entity_id, action, performed_by, performed_by_name, old_values, new_values, created_at: new Date().toISOString() };
     logs.unshift(newLog);
-    this.set('audit_logs', logs.slice(0, 50)); // Giữ 50 log mới nhất
+    this.set('audit_logs', logs.slice(0, 50));
   }
 }
 

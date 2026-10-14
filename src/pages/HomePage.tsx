@@ -1,259 +1,393 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { UserRole } from '../types';
+import { dataService } from '../services/dataService';
 import { 
-  FileText, 
+  GraduationCap, 
+  Search, 
+  MapPin, 
   BookOpen, 
-  CreditCard, 
+  Star, 
+  CheckCircle2, 
   ShieldCheck, 
   ArrowRight, 
-  CheckCircle2, 
-  Clock, 
-  Sparkles
+  Sparkles,
+  Clock,
+  Users
 } from 'lucide-react';
-
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
   currentRole: UserRole;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole }) => {
+export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _currentRole }) => {
+  const [searchSubject, setSearchSubject] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('all');
+
+  const categories = dataService.getSubjectCategories();
+  const tutors = dataService.getTutors(true); // Chỉ lấy người dạy Đã duyệt (verified)
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onNavigate('academic');
+  };
+
   return (
     <div className="space-y-16 animate-fadeIn">
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-6 pb-12 text-center md:text-left">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-10">
+      {/* ========================================================================= */}
+      {/* 1. HERO SECTION & BRAND SLOGAN */}
+      {/* ========================================================================= */}
+      <section className="relative overflow-hidden pt-4 pb-8">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
           
-          <div className="max-w-2xl space-y-6">
-            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Nền Tảng Dịch Vụ & Quản Trị Học Vụ Chuẩn Hóa</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              Quản trị yêu cầu học vụ <br className="hidden sm:inline" />
-              <span className="bg-gradient-to-r from-indigo-400 via-violet-300 to-indigo-200 bg-clip-text text-transparent">
-                Minh bạch & Tức thời
-              </span>
-            </h1>
-
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
-              EduMate số hóa quy trình nộp biểu mẫu yêu cầu, quản lý dữ liệu học tập và xử lý thanh toán đơn hàng giữa Người học và Ban Quản trị Giáo vụ theo chuẩn bảo mật PostgreSQL RLS.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-              {currentRole === 'student' ? (
-                <>
-                  <button
-                    onClick={() => onNavigate('submit-request')}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer"
-                  >
-                    <span>Nộp biểu mẫu yêu cầu ngay</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onNavigate('my-requests')}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-200 text-sm font-semibold transition-all cursor-pointer"
-                  >
-                    Theo dõi tiến độ hồ sơ
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => onNavigate('admin')}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer"
-                  >
-                    <span>Truy cập Bàn làm việc Quản trị</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onNavigate('academic')}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-200 text-sm font-semibold transition-all cursor-pointer"
-                  >
-                    Xem danh mục học vụ
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Micro proof badges */}
-            <div className="pt-4 flex flex-wrap items-center gap-4 text-xs text-slate-400">
-              <span className="flex items-center space-x-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Thẩm định có đối soát</span>
-              </span>
-              <span className="flex items-center space-x-1.5">
-                <ShieldCheck className="w-4 h-4 text-indigo-400" />
-                <span>Bảo mật cấp dòng (RLS)</span>
-              </span>
-              <span className="flex items-center space-x-1.5">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <span>Thời gian phản hồi 24h</span>
-              </span>
-            </div>
+          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Nền tảng kết nối Người học & Người dạy tiên phong tại Huế</span>
           </div>
 
-          {/* Quick interactive card preview */}
-          <div className="w-full max-w-md">
-            <div className="glass-panel rounded-3xl p-6 border border-slate-700 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div className="flex items-center space-x-2 text-xs font-bold text-slate-300">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Quy trình xử lý yêu cầu mẫu</span>
-                </div>
-                <span className="text-[10px] font-mono text-slate-400">REQ-2026-LIVE</span>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+            “Tìm đúng người dạy – <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-blue-400 via-emerald-400 to-teal-300 bg-clip-text text-transparent">
+              Học đúng điều cần.”
+            </span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
+            EduMate là nền tảng trung gian hỗ trợ sinh viên và người trẻ tại <strong>Thừa Thiên Huế</strong> tìm kiếm gia sư, người hướng dẫn ôn thi đại học, ngoại ngữ và kỹ năng lập trình phù hợp với ngân sách và thời gian.
+          </p>
+
+          {/* Quick Search Bar */}
+          <div className="pt-2 max-w-3xl mx-auto">
+            <form 
+              onSubmit={handleSearchSubmit}
+              className="p-2 sm:p-3 rounded-2xl bg-slate-900/90 border border-slate-700 shadow-2xl backdrop-blur-md grid grid-cols-1 sm:grid-cols-12 gap-2 text-left"
+            >
+              {/* Keyword / Subject input */}
+              <div className="sm:col-span-5 relative flex items-center">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchSubject}
+                  onChange={(e) => setSearchSubject(e.target.value)}
+                  placeholder="Môn học, kỹ năng (Toán, IELTS, React...)"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all"
+                />
               </div>
 
-              <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <div className="text-slate-400">Bước 1: Nộp đơn</div>
-                    <div className="font-semibold text-white">Biểu mẫu hoãn thi / Đổi lịch</div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-blue-500/10 text-blue-400 font-bold border border-blue-500/20">
-                    SUBMITTED
-                  </span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <div className="text-slate-400">Bước 2: Thẩm định</div>
-                    <div className="font-semibold text-white">Ban Giáo vụ kiểm tra minh chứng</div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 font-bold border border-amber-500/20">
-                    IN_REVIEW
-                  </span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
-                  <div>
-                    <div className="text-emerald-400 font-semibold">Bước 3: Phê duyệt</div>
-                    <div className="text-[11px] text-slate-300">Đã ban hành thông báo điện tử</div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-                    APPROVED
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-2 text-center">
-                <button
-                  onClick={() => onNavigate('my-requests')}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center justify-center space-x-1 mx-auto cursor-pointer"
+              {/* District select */}
+              <div className="sm:col-span-4 relative flex items-center">
+                <MapPin className="w-4 h-4 text-emerald-400 absolute left-3 pointer-events-none" />
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition-all cursor-pointer"
                 >
-                  <span>Xem chi tiết hồ sơ cá nhân</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <option value="all">Tất cả khu vực tại Huế</option>
+                  <option value="TP. Huế">TP. Huế (Trung tâm)</option>
+                  <option value="Hương Thủy">TX. Hương Thủy</option>
+                  <option value="Hương Trà">TX. Hương Trà</option>
+                  <option value="Phú Vang">Huyện Phú Vang</option>
+                  <option value="Phú Lộc">Huyện Phú Lộc</option>
+                </select>
+              </div>
+
+              {/* Search Button */}
+              <div className="sm:col-span-3">
+                <button
+                  type="submit"
+                  className="w-full h-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Tìm người dạy</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Value Badges */}
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
+            <span className="flex items-center space-x-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>100% Hồ sơ đã kiểm duyệt bằng cấp</span>
+            </span>
+            <span className="flex items-center space-x-1.5">
+              <ShieldCheck className="w-4 h-4 text-blue-400" />
+              <span>Chỉ đánh giá sau khi hoàn thành</span>
+            </span>
+            <span className="flex items-center space-x-1.5">
+              <Users className="w-4 h-4 text-teal-400" />
+              <span>Học trực tiếp tại Huế & Trực tuyến</span>
+            </span>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 2. SUBJECT & SKILL CATEGORIES */}
+      {/* ========================================================================= */}
+      <section className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center space-x-2">
+              <BookOpen className="w-5 h-5 text-emerald-400" />
+              <span>Danh mục Môn học & Kỹ năng nổi bật</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Khám phá các lĩnh vực học tập đang có người dạy sẵn sàng nhận học viên tại Huế
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('academic')}
+            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1"
+          >
+            <span>Xem tất cả danh mục</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {categories.map((cat) => (
+            <div
+              key={cat.id}
+              onClick={() => onNavigate('academic')}
+              className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-emerald-500/40 hover:bg-slate-900/60 transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between pb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600/20 to-emerald-600/20 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">
+                  {cat.tutor_count} người dạy
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                {cat.name}
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
+                {cat.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3. FEATURED VERIFIED TUTORS IN HUẾ */}
+      {/* ========================================================================= */}
+      <section className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div>
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-2">
+              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <span>Hồ sơ đã kiểm duyệt bởi Quản trị viên EduMate</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
+              Đội ngũ Người dạy tiêu biểu tại Huế
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Thủ khoa, cử nhân sư phạm và kỹ sư giàu kinh nghiệm thực chiến
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('academic')}
+            className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center space-x-1"
+          >
+            <span>Khám phá toàn bộ hồ sơ</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {tutors.slice(0, 3).map((tutor) => (
+            <div
+              key={tutor.id}
+              className="glass-panel rounded-2xl border border-slate-800 hover:border-blue-500/40 p-5 flex flex-col justify-between space-y-4 hover:shadow-xl transition-all"
+            >
+              <div className="space-y-3">
+                {/* Header: Avatar, Name, Verification badge */}
+                <div className="flex items-start space-x-3">
+                  <img
+                    src={tutor.avatar_url}
+                    alt={tutor.full_name}
+                    className="w-14 h-14 rounded-2xl object-cover ring-2 ring-emerald-500/30"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-1.5">
+                      <h3 className="text-sm font-bold text-white truncate">
+                        {tutor.full_name}
+                      </h3>
+                      {tutor.verification_status === 'verified' && (
+                        <span 
+                          className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-0.5"
+                          title="Hồ sơ đã được Quản trị viên EduMate xác minh bằng cấp & căn cước"
+                        >
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                          <span>Đã duyệt</span>
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                      {tutor.headline}
+                    </p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="flex items-center space-x-1 text-amber-400 text-xs font-bold">
+                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                        <span>{tutor.rating_avg.toFixed(1)}</span>
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        ({tutor.rating_count} đánh giá)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subjects tags */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {tutor.subjects.map((sub, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-800 text-slate-300 border border-slate-700"
+                    >
+                      {sub}
+                    </span>
+                  ))}
+                </div>
+
+                {/* District & Teaching mode */}
+                <div className="space-y-1 text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                  <div className="flex items-center space-x-1.5">
+                    <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span className="truncate">{tutor.district}</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <Clock className="w-3 h-3 text-blue-400 shrink-0" />
+                    <span>Hình thức: {tutor.teaching_mode === 'both' ? 'Trực tiếp & Trực tuyến' : tutor.teaching_mode === 'offline' ? 'Chỉ dạy trực tiếp' : 'Dạy trực tuyến'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer: Fee & CTA */}
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] text-slate-500">Mức phí đề xuất</div>
+                  <div className="text-sm font-extrabold text-emerald-400">
+                    {tutor.hourly_rate.toLocaleString('vi-VN')} đ <span className="text-[10px] font-normal text-slate-400">/ buổi (2h)</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => onNavigate('academic')}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center space-x-1 cursor-pointer"
+                >
+                  <span>Gửi yêu cầu</span>
+                  <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
             </div>
-          </div>
-
+          ))}
         </div>
       </section>
 
-      {/* 4 Pillars Section */}
-      <section className="space-y-8 pt-6">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-            4 Phân Hệ Dữ Liệu Được Chuẩn Hóa
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Kiến trúc trung lập tuân thủ đặc tả nghiệp vụ, đáp ứng tính mở rộng và linh hoạt cao.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          
-          <div 
-            onClick={() => onNavigate('profile')}
-            className="glass-card rounded-2xl p-6 border border-slate-800 space-y-3 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">1. Hồ sơ & Tài khoản</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Quản lý định danh người học, mã sinh viên, thông tin liên lạc và vai trò phân quyền chi tiết.
-            </p>
-          </div>
-
-          <div 
-            onClick={() => onNavigate('submit-request')}
-            className="glass-card rounded-2xl p-6 border border-slate-800 space-y-3 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
-              <FileText className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">2. Biểu mẫu & Yêu cầu</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Khởi tạo hồ sơ, lưu nháp, nộp trực tuyến và nhận phản hồi phê duyệt hoặc từ chối kèm lý do.
-            </p>
-          </div>
-
-          <div 
-            onClick={() => onNavigate('academic')}
-            className="glass-card rounded-2xl p-6 border border-slate-800 space-y-3 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">3. Thông tin học tập</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Tra cứu danh mục môn học, chuyên đề đào tạo, quản lý trạng thái ghi danh và kết quả học vụ.
-            </p>
-          </div>
-
-          <div 
-            onClick={() => onNavigate('orders')}
-            className="glass-card rounded-2xl p-6 border border-slate-800 space-y-3 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-              <CreditCard className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">4. Đơn hàng & Thanh toán</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Theo dõi nghĩa vụ học phí, lệ phí học vụ, nộp xác nhận chuyển khoản và quản lý đối soát.
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 4-Step Process Flow */}
-      <section className="glass-panel rounded-3xl p-8 border border-slate-800 space-y-8">
+      {/* ========================================================================= */}
+      {/* 4. BUSINESS PROCESS / HOW IT WORKS (QUY TRÌNH A -> E) */}
+      {/* ========================================================================= */}
+      <section className="glass-panel p-8 rounded-3xl border border-slate-800 space-y-8 bg-gradient-to-b from-slate-900/60 to-slate-950/80">
         <div className="text-center max-w-xl mx-auto space-y-2">
-          <h2 className="text-2xl font-bold text-white">Quy Trình Hoạt Động Khép Kín</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">
+            Quy trình kết nối minh bạch & an tâm
+          </h2>
           <p className="text-xs text-slate-400">
-            Từ lúc người học gửi biểu mẫu đến khi hoàn tất phê chuẩn và đối soát tài chính
+            Hệ thống đảm bảo quyền lợi cho cả người học và người dạy qua 4 bước chuẩn mực
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-            <div className="text-xs font-mono font-bold text-indigo-400">01. ĐĂNG KÝ / NỘP ĐƠN</div>
-            <h4 className="text-sm font-semibold text-white">Chọn loại biểu mẫu</h4>
-            <p className="text-xs text-slate-400">Điền thông tin và đính kèm giấy tờ chứng minh theo yêu cầu.</p>
+          
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 font-extrabold flex items-center justify-center text-xs border border-blue-500/30">
+              01
+            </div>
+            <h3 className="text-xs font-bold text-white">Tìm kiếm & Lọc</h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Người học tra cứu người dạy theo môn học, mức phí và khu vực cụ thể tại Huế (Hương Thủy, Hương Trà, Phú Vang...).
+            </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-            <div className="text-xs font-mono font-bold text-amber-400">02. THẨM ĐỊNH GIÁO VỤ</div>
-            <h4 className="text-sm font-semibold text-white">Xem xét & Phản hồi</h4>
-            <p className="text-xs text-slate-400">Ban quản lý kiểm tra tính hợp lệ và cập nhật trạng thái hồ sơ.</p>
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-400 font-extrabold flex items-center justify-center text-xs border border-emerald-500/30">
+              02
+            </div>
+            <h3 className="text-xs font-bold text-white">Gửi yêu cầu học</h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Điền mục tiêu cần học, hình thức và khung giờ mong muốn. Yêu cầu được gửi ở trạng thái <em>Chờ xác nhận</em>.
+            </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-            <div className="text-xs font-mono font-bold text-emerald-400">03. PHÊ DUYỆT CHÍNH THỨC</div>
-            <h4 className="text-sm font-semibold text-white">Ban hành kết quả</h4>
-            <p className="text-xs text-slate-400">Người học nhận thông báo kết quả duyệt kèm chỉ dẫn chi tiết.</p>
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-teal-600/20 text-teal-400 font-extrabold flex items-center justify-center text-xs border border-teal-500/30">
+              03
+            </div>
+            <h3 className="text-xs font-bold text-white">Xác nhận & Thống nhất</h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Người dạy nhận thông báo, xem xét thời gian và chọn chấp nhận hoặc từ chối kèm lý do rõ ràng.
+            </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-            <div className="text-xs font-mono font-bold text-teal-400">04. ĐỐI SOÁT & HOÀN TẤT</div>
-            <h4 className="text-sm font-semibold text-white">Xác nhận nghĩa vụ</h4>
-            <p className="text-xs text-slate-400">Đối chiếu biên lai nộp lệ phí học vụ và lưu vết nhật ký kiểm toán.</p>
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-600/20 text-amber-400 font-extrabold flex items-center justify-center text-xs border border-amber-500/30">
+              04
+            </div>
+            <h3 className="text-xs font-bold text-white">Hoàn thành & Đánh giá</h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Sau buổi học hoàn thành, người học gửi đánh giá sao & nhận xét thực tế. Ngăn chặn đánh giá ảo tuyệt đối.
+            </p>
           </div>
+
+        </div>
+
+        {/* Action Call for Tutors and Learners */}
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 border-t border-slate-800/80">
+          <button
+            onClick={() => onNavigate('academic')}
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+          >
+            <span>Duyệt danh sách Người dạy ngay</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={() => onNavigate('academic')}
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-200 text-xs font-bold transition-all cursor-pointer"
+          >
+            Đăng ký làm Người dạy (Tutor)
+          </button>
+        </div>
+
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 5. ACADEMIC INTEGRITY & MVP TRANSPARENCY NOTICE */}
+      {/* ========================================================================= */}
+      <section className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-200">
+              Cam kết minh bạch phục vụ Đồ án Sinh viên
+            </div>
+            <div className="text-[11px] text-slate-400">
+              Dữ liệu hiển thị dựa trên hồ sơ thực tế. Chỉ hồ sơ đã được Quản trị viên duyệt mới gắn nhãn "Đã duyệt". Chưa tích hợp cổng thanh toán trực tiếp để bảo vệ người dùng sinh viên.
+            </div>
+          </div>
+        </div>
+        <div className="shrink-0">
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-slate-800 text-emerald-400 border border-emerald-500/20">
+            MVP Status: Sẵn sàng bảo vệ
+          </span>
         </div>
       </section>
 

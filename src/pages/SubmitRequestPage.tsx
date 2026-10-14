@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import type { Profile, ServiceForm } from '../types';
+import type { Profile } from '../types';
 import { dataService } from '../services/dataService';
-import { isSupabaseConfigured, supabaseCreateRequest } from '../lib/supabase';
 import { 
-  FileText, 
   Send, 
-  FileEdit, 
-  Loader2,
+  MapPin, 
+  CheckCircle2, 
+  Sparkles,
   Info
 } from 'lucide-react';
-
 
 interface SubmitRequestPageProps {
   currentUser: Profile;
@@ -22,298 +20,298 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
   onNavigate,
   showToast,
 }) => {
-  const forms: ServiceForm[] = dataService.getServiceForms();
-  const [selectedFormId, setSelectedFormId] = useState<string>(forms[0]?.id || '');
-  const [loading, setLoading] = useState(false);
+  const verifiedTutors = dataService.getTutors(true);
+  const [selectedTutorId, setSelectedTutorId] = useState<string>(verifiedTutors[0]?.id || '');
+  const [subject, setSubject] = useState<string>(verifiedTutors[0]?.subjects[0] || 'Toán cao cấp');
+  const [mode, setMode] = useState<'offline' | 'online'>('offline');
+  const [schedule, setSchedule] = useState<string>('Tối thứ 2, 4, 6 (19:00 - 21:00)');
+  const [address, setAddress] = useState<string>('TP. Huế (Khu Ký túc xá ĐH Huế)');
+  const [goals, setGoals] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [loading, setLoading] = useState(false);
 
-  // Dynamic payload inputs
-  const [reason, setReason] = useState('');
-  const [targetDate, setTargetDate] = useState('');
-  const [copiesCount, setCopiesCount] = useState('1');
-  const [deliveryMethod, setDeliveryMethod] = useState('Nhan truc tiep tai phong Giao vu');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [additionalNotes, setAdditionalNotes] = useState('');
+  const selectedTutor = verifiedTutors.find(t => t.id === selectedTutorId) || verifiedTutors[0];
 
-  const currentForm = forms.find(f => f.id === selectedFormId) || forms[0];
-
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!reason.trim()) {
-      newErrors.reason = 'Vui lòng nêu rõ lý do hoặc nội dung yêu cầu cụ thể';
-    } else if (reason.trim().length < 10) {
-      newErrors.reason = 'Nội dung lý do quá ngắn (tối thiểu 10 ký tự để ban giáo vụ thẩm định)';
+  const handleTutorChange = (tutorId: string) => {
+    setSelectedTutorId(tutorId);
+    const tutor = verifiedTutors.find(t => t.id === tutorId);
+    if (tutor && tutor.subjects.length > 0) {
+      setSubject(tutor.subjects[0]);
     }
-
-    if (currentForm.code === 'FORM-HOAN-THI' && !targetDate) {
-      newErrors.targetDate = 'Vui lòng chọn ngày mong muốn chuyển dời';
-    }
-
-    if (currentForm.code === 'FORM-CAP-BANG-DIEM') {
-      const count = parseInt(copiesCount, 10);
-      if (isNaN(count) || count < 1 || count > 10) {
-        newErrors.copiesCount = 'Số lượng bản sao phải từ 1 đến 10 bản';
-      }
-      if (deliveryMethod === 'Chuyen phat nhanh buu dien' && !deliveryAddress.trim()) {
-        newErrors.deliveryAddress = 'Vui lòng nhập địa chỉ nhận bưu điện';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
-  const handleFormSubmit = async (status: 'draft' | 'submitted') => {
-    if (loading) return; // Anti-duplicate submit
-    if (status === 'submitted' && !validate()) {
-      showToast('error', 'Biểu mẫu chưa hợp lệ', 'Vui lòng kiểm tra lại các trường thông tin');
+  const validate = () => {
+    const errs: { [key: string]: string } = {};
+    if (!goals.trim()) {
+      errs.goals = 'Vui lòng nêu rõ mục tiêu hoặc nội dung kiến thức bạn cần người dạy hỗ trợ.';
+    } else if (goals.trim().length < 10) {
+      errs.goals = 'Nội dung mục tiêu quá ngắn (tối thiểu 10 ký tự để người dạy nắm bắt).';
+    }
+
+    if (!schedule.trim()) {
+      errs.schedule = 'Vui lòng nhập khung giờ rảnh mong muốn của bạn.';
+    }
+
+    if (mode === 'offline' && !address.trim()) {
+      errs.address = 'Vui lòng nhập khu vực hoặc địa chỉ dự kiến học tại Huế.';
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+
+    if (!validate()) {
+      showToast('error', 'Biểu mẫu chưa hợp lệ', 'Vui lòng kiểm tra lại các trường được đánh dấu đỏ');
+      return;
+    }
+
+    if (!selectedTutor) {
+      showToast('error', 'Chưa chọn người dạy', 'Vui lòng chọn người dạy trong danh sách');
       return;
     }
 
     setLoading(true);
 
-    const formDataPayload: Record<string, any> = {
-      ly_do_noi_dung: reason.trim(),
-      ghi_chu_them: additionalNotes.trim() || undefined,
-    };
-
-    if (currentForm.code === 'FORM-HOAN-THI') {
-      formDataPayload.ngay_mong_muon = targetDate;
-    } else if (currentForm.code === 'FORM-CAP-BANG-DIEM') {
-      formDataPayload.so_ban = parseInt(copiesCount, 10) || 1;
-      formDataPayload.hinh_thuc_nhan = deliveryMethod;
-      formDataPayload.dia_chi_gui = deliveryAddress.trim() || undefined;
-    } else if (currentForm.code === 'FORM-DANG-KY-HO-TRO') {
-      formDataPayload.khung_gio_ranh = targetDate || 'Linh hoạt theo trợ giảng';
-    }
-
     try {
-      if (isSupabaseConfigured) {
-        const requestCode = `REQ-${Date.now().toString().slice(-6)}`;
-        const created = await supabaseCreateRequest({
-          requestCode,
-          formTypeId: currentForm.id,
-          formData: formDataPayload,
-          status: status,
-        });
-        const actionText = status === 'submitted' ? 'Đã nộp chính thức' : 'Đã lưu bản nháp';
-        showToast('success', `${actionText} (Supabase Cloud)!`, `Mã hồ sơ: ${created.request_code}`);
-      } else {
-        const created = dataService.createRequest({
-          student_id: currentUser.id,
-          form_type_id: currentForm.id,
-          form_type_title: currentForm.title,
-          student_name: currentUser.full_name,
-          student_email: currentUser.email,
-          student_code: currentUser.student_code,
-          form_data: formDataPayload,
-          status: status,
-        });
-        const actionText = status === 'submitted' ? 'Đã nộp chính thức' : 'Đã lưu bản nháp';
-        showToast('success', `${actionText} thành công!`, `Mã yêu cầu: ${created.request_code}`);
-      }
+      const newReq = dataService.createLearningRequest({
+        student_id: currentUser.id,
+        student_name: currentUser.full_name,
+        student_email: currentUser.email,
+        student_phone: currentUser.phone,
+        tutor_id: selectedTutor.id,
+        tutor_name: selectedTutor.full_name,
+        subject_name: subject,
+        teaching_mode: mode,
+        preferred_schedule: schedule.trim(),
+        learning_goals: goals.trim(),
+        address: mode === 'offline' ? address.trim() : undefined,
+        notes: notes.trim() || undefined
+      });
+
+      showToast('success', 'Gửi yêu cầu học thành công!', `Mã yêu cầu: ${newReq.request_code}. Đang chờ ${selectedTutor.full_name} phản hồi.`);
       onNavigate('my-requests');
     } catch (err: any) {
-      showToast('error', 'Lỗi gửi yêu cầu', err?.message || 'Không thể gửi yêu cầu vào lúc này');
+      showToast('error', 'Lỗi gửi yêu cầu', err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-fadeIn">
+    <div className="max-w-3xl mx-auto space-y-6 animate-fadeIn pb-12">
       
-      <div>
+      {/* Page Title */}
+      <div className="space-y-1.5 pb-2 border-b border-slate-800">
+        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Quy trình gửi yêu cầu học chuẩn hóa</span>
+        </div>
         <h1 className="text-2xl font-extrabold text-white flex items-center space-x-2">
-          <FileText className="w-6 h-6 text-indigo-400" />
-          <span>Khởi Tạo & Nộp Biểu Mẫu Dịch Vụ Học Vụ</span>
+          <Send className="w-6 h-6 text-emerald-400" />
+          <span>Biểu Mẫu Gửi Yêu Cầu Học Tập</span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Điền đầy đủ thông tin để gửi tới Ban Quản lý Giáo vụ xem xét và thẩm định hồ sơ
+        <p className="text-xs text-slate-400">
+          Chọn người dạy phù hợp tại Huế, cung cấp nhu cầu học tập và thời gian mong muốn để bắt đầu buổi học
         </p>
       </div>
 
-      <div className="glass-panel rounded-3xl p-6 md:p-8 border border-slate-700 shadow-xl space-y-6">
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-700 shadow-2xl space-y-6">
         
-        {/* Step 1: Select Form Type */}
-        <div className="space-y-2">
-          <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider">
-            1. Chọn loại biểu mẫu dịch vụ:
-          </label>
-          <div className="grid grid-cols-1 gap-2.5">
-            {forms.map((f) => (
-              <div
-                key={f.id}
-                onClick={() => { setSelectedFormId(f.id); setErrors({}); }}
-                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start space-x-3 ${
-                  selectedFormId === f.id
-                    ? 'border-indigo-500 bg-indigo-950/30 text-white ring-1 ring-indigo-500/50'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700'
-                }`}
-              >
-                <div className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                  selectedFormId === f.id ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'
-                }`}>
-                  {selectedFormId === f.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+        {/* Selected Tutor Card preview */}
+        {selectedTutor && (
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3.5">
+              <img
+                src={selectedTutor.avatar_url}
+                alt={selectedTutor.full_name}
+                className="w-14 h-14 rounded-2xl object-cover ring-2 ring-emerald-500/30"
+              />
+              <div>
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-sm font-bold text-white">{selectedTutor.full_name}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-0.5">
+                    <CheckCircle2 className="w-2.5 h-2.5" />
+                    <span>Đã duyệt</span>
+                  </span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold flex items-center space-x-2">
-                    <span>{f.title}</span>
-                    <span className="text-[10px] font-mono font-normal text-indigo-400 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-800/50">
-                      {f.code}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5">{f.description}</p>
+                <p className="text-xs text-slate-300 font-medium line-clamp-1">{selectedTutor.headline}</p>
+                <div className="text-[11px] text-slate-400 flex items-center space-x-2 mt-0.5">
+                  <span className="flex items-center space-x-1 text-emerald-400">
+                    <MapPin className="w-3 h-3" />
+                    <span>{selectedTutor.district}</span>
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Form Details Area */}
-        <div className="space-y-4 pt-4 border-t border-slate-800 text-xs">
-          <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-            2. Khai báo thông tin chi tiết:
-          </div>
-
-          <div>
-            <label className="block text-slate-300 font-medium mb-1">
-              Lý do hoặc nội dung chi tiết: <span className="text-rose-400">*</span>
-            </label>
-            <textarea
-              rows={4}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Trình bày rõ hoàn cảnh, căn cứ và mong muốn đề đạt tới ban giáo vụ..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 leading-relaxed"
-            />
-            {errors.reason && <p className="text-rose-400 mt-1">{errors.reason}</p>}
-          </div>
-
-          {currentForm.code === 'FORM-HOAN-THI' && (
-            <div>
-              <label className="block text-slate-300 font-medium mb-1">
-                Ngày mong muốn tổ chức thi / đánh giá lại: <span className="text-rose-400">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={targetDate}
-                  onChange={(e) => setTargetDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-              {errors.targetDate && <p className="text-rose-400 mt-1">{errors.targetDate}</p>}
             </div>
-          )}
 
-          {currentForm.code === 'FORM-CAP-BANG-DIEM' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Số lượng bản sao cần cấp: <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={copiesCount}
-                  onChange={(e) => setCopiesCount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
-                {errors.copiesCount && <p className="text-rose-400 mt-1">{errors.copiesCount}</p>}
+            <div className="text-left sm:text-right shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800">
+              <div className="text-[10px] text-slate-400">Mức phí đề xuất</div>
+              <div className="text-sm font-extrabold text-emerald-400">
+                {selectedTutor.hourly_rate.toLocaleString('vi-VN')} đ <span className="text-[10px] text-slate-400 font-normal">/ buổi (2h)</span>
               </div>
+            </div>
+          </div>
+        )}
 
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Hình thức nhận kết quả:
-                </label>
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          
+          {/* Select Tutor Dropdown */}
+          <div>
+            <label className="block text-slate-200 font-semibold mb-1">
+              Người dạy tiếp nhận yêu cầu *
+            </label>
+            <select
+              value={selectedTutorId}
+              onChange={(e) => handleTutorChange(e.target.value)}
+              className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+            >
+              {verifiedTutors.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.full_name} – {t.headline} ({t.hourly_rate.toLocaleString('vi-VN')} đ/buổi)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Subject & Teaching Mode */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-slate-200 font-semibold mb-1">
+                Môn học / Kỹ năng cần học *
+              </label>
+              {selectedTutor?.subjects && selectedTutor.subjects.length > 0 ? (
                 <select
-                  value={deliveryMethod}
-                  onChange={(e) => setDeliveryMethod(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
-                  <option value="Nhan truc tiep tai phong Giao vu">Nhận trực tiếp tại phòng Giáo vụ</option>
-                  <option value="Chuyen phat nhanh buu dien">Chuyển phát nhanh bưu điện</option>
-                  <option value="Ban ky so qua Email">Bản ký số qua Email</option>
+                  {selectedTutor.subjects.map((sub, i) => (
+                    <option key={i} value={sub}>{sub}</option>
+                  ))}
                 </select>
-              </div>
-
-              {deliveryMethod === 'Chuyen phat nhanh buu dien' && (
-                <div className="sm:col-span-2">
-                  <label className="block text-slate-300 font-medium mb-1">
-                    Địa chỉ nhận hồ sơ cụ thể: <span className="text-rose-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành..."
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                  {errors.deliveryAddress && <p className="text-rose-400 mt-1">{errors.deliveryAddress}</p>}
-                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="VD: Toán cao cấp..."
+                  className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
+                />
               )}
             </div>
-          )}
 
+            <div>
+              <label className="block text-slate-200 font-semibold mb-1">
+                Hình thức học mong muốn *
+              </label>
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as 'offline' | 'online')}
+                className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="offline">Học kèm trực tiếp tại Huế</option>
+                <option value="online">Học trực tuyến qua Google Meet / Zoom</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Preferred Schedule & Address */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-slate-200 font-semibold mb-1">
+                Khung thời gian rảnh mong muốn *
+              </label>
+              <input
+                type="text"
+                value={schedule}
+                onChange={(e) => setSchedule(e.target.value)}
+                placeholder="VD: Tối thứ 2, 4, 6 (19h - 21h)"
+                className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
+              />
+              {errors.schedule && <p className="text-rose-400 text-[11px] mt-1">{errors.schedule}</p>}
+            </div>
+
+            {mode === 'offline' && (
+              <div>
+                <label className="block text-slate-200 font-semibold mb-1">
+                  Khu vực / Địa chỉ học tại Huế *
+                </label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="VD: Ký túc xá ĐH Huế, 42 Lê Hồng Phong..."
+                  className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
+                />
+                {errors.address && <p className="text-rose-400 text-[11px] mt-1">{errors.address}</p>}
+              </div>
+            )}
+          </div>
+
+          {/* Goals / Needs */}
           <div>
-            <label className="block text-slate-300 font-medium mb-1">
-              Ghi chú thêm hoặc liên kết minh chứng (Ảnh/PDF online):
+            <label className="block text-slate-200 font-semibold mb-1">
+              Mục tiêu học tập & Nội dung cần hỗ trợ (Tối thiểu 10 ký tự) *
+            </label>
+            <textarea
+              rows={3}
+              value={goals}
+              onChange={(e) => setGoals(e.target.value)}
+              placeholder="Nêu rõ tình trạng học tập hiện tại, phần kiến thức bị hổng, kỳ thi hoặc bài tập lớn đang cần kèm..."
+              className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
+            />
+            {errors.goals && <p className="text-rose-400 text-[11px] mt-1">{errors.goals}</p>}
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-slate-200 font-semibold mb-1">
+              Ghi chú thêm cho người dạy
             </label>
             <input
               type="text"
-              value={additionalNotes}
-              onChange={(e) => setAdditionalNotes(e.target.value)}
-              placeholder="VD: https://drive.google.com/... hoặc giấy xác nhận đính kèm"
-              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="VD: Em cần học kèm gấp 4 buổi trong tháng này..."
+              className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
 
-          <div className="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-slate-400 flex items-start space-x-2 text-[11px]">
-            <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+          {/* Notice box */}
+          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-400 flex items-start space-x-2">
+            <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              Hồ sơ khi nộp chính thức sẽ được chuyển sang trạng thái <strong>Chờ xử lý (Submitted)</strong> và gán vào hàng đợi thẩm định của Người quản lý. Bạn có thể lưu bản nháp nếu chưa hoàn thiện minh chứng.
+              Yêu cầu sau khi gửi sẽ ở trạng thái <strong>Chờ xác nhận</strong>. Người dạy sẽ xem xét và phản hồi trong vòng 24 giờ. Bạn có thể theo dõi tiến độ hoặc hủy yêu cầu tại mục <em>Yêu cầu & Lịch dạy</em>.
             </p>
           </div>
 
-        </div>
+          {/* Action buttons */}
+          <div className="pt-3 border-t border-slate-800 flex items-center justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => onNavigate('academic')}
+              className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-semibold hover:bg-slate-700 transition-all cursor-pointer"
+            >
+              Xem lại người dạy khác
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+              <span>Gửi yêu cầu học</span>
+            </button>
+          </div>
 
-        {/* Actions Button */}
-        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-800">
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => handleFormSubmit('draft')}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
-          >
-            <FileEdit className="w-3.5 h-3.5" />
-            <span>Lưu bản nháp (Draft)</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => handleFormSubmit('submitted')}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Đang xử lý nộp đơn...</span>
-              </>
-            ) : (
-              <>
-                <Send className="w-3.5 h-3.5" />
-                <span>Nộp yêu cầu chính thức</span>
-              </>
-            )}
-          </button>
-        </div>
+        </form>
 
       </div>
-
     </div>
   );
 };

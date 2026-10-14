@@ -13,7 +13,6 @@ import {
   FilePlus2,
   ListFilter,
   BookOpen,
-  CreditCard,
   Settings
 } from 'lucide-react';
 import { isSupabaseConfigured } from '../../lib/supabase';
@@ -39,11 +38,10 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navLinks = [
     { id: 'home', label: 'Trang chủ', icon: Home, roles: ['all'] },
-    { id: 'submit-request', label: 'Gửi yêu cầu', icon: FilePlus2, roles: ['student'] },
-    { id: 'my-requests', label: 'Theo dõi yêu cầu', icon: ListFilter, roles: ['student'] },
-    { id: 'academic', label: 'Thông tin học tập', icon: BookOpen, roles: ['all'] },
-    { id: 'orders', label: 'Đơn hàng & Thanh toán', icon: CreditCard, roles: ['student'] },
-    { id: 'admin', label: 'Khu vực Quản trị', icon: Settings, roles: ['manager'] },
+    { id: 'academic', label: 'Tìm người dạy', icon: BookOpen, roles: ['all'] },
+    { id: 'submit-request', label: 'Gửi yêu cầu học', icon: FilePlus2, roles: ['student'] },
+    { id: 'my-requests', label: 'Yêu cầu & Lịch dạy', icon: ListFilter, roles: ['student', 'tutor'] },
+    { id: 'admin', label: 'Khu vực Quản trị', icon: Settings, roles: ['manager', 'admin'] },
   ];
 
   const visibleLinks = navLinks.filter(
@@ -60,19 +58,19 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center space-x-3 cursor-pointer select-none" 
             onClick={() => onNavigate('home')}
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-1 ring-white/20">
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">
+                <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-emerald-300 to-teal-200 bg-clip-text text-transparent">
                   EduMate
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  v1.0
+                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Huế Edition
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 hidden sm:block">Dịch vụ & Quản trị Học vụ</p>
+              <p className="text-[10px] text-slate-400 hidden sm:block">Tìm đúng người dạy – Học đúng điều cần</p>
             </div>
           </div>
 
@@ -87,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => onNavigate(link.id)}
                   className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30 font-semibold'
+                      ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm shadow-blue-600/30 font-semibold'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
@@ -103,11 +101,11 @@ export const Header: React.FC<HeaderProps> = ({
             
             {/* Database indicator */}
             <div className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] bg-slate-900 border border-slate-800 text-slate-400">
-              <Database className="w-3 h-3 text-indigo-400" />
+              <Database className="w-3 h-3 text-emerald-400" />
               <span>{isSupabaseConfigured ? 'Supabase Live' : 'Mô phỏng Local Engine'}</span>
             </div>
 
-            {/* Role switch toggle */}
+            {/* 3-Role switch toggle */}
             <div className="flex items-center bg-slate-900 border border-slate-800 p-0.5 rounded-xl">
               <button
                 onClick={() => onSwitchRole('student')}
@@ -116,19 +114,31 @@ export const Header: React.FC<HeaderProps> = ({
                     ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
-                title="Đổi vai trò sang Sinh viên / Người học"
+                title="Đổi vai trò sang Người học (Học viên)"
               >
                 <UserCheck className="w-3 h-3" />
                 <span className="hidden sm:inline">Người học</span>
               </button>
               <button
-                onClick={() => onSwitchRole('manager')}
+                onClick={() => onSwitchRole('tutor')}
                 className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  currentRole === 'manager'
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
+                  currentRole === 'tutor'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
-                title="Đổi vai trò sang Người quản lý"
+                title="Đổi vai trò sang Người dạy (Gia sư/Giảng viên)"
+              >
+                <GraduationCap className="w-3 h-3" />
+                <span className="hidden sm:inline">Người dạy</span>
+              </button>
+              <button
+                onClick={() => onSwitchRole('manager')}
+                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  currentRole === 'manager' || currentRole === 'admin'
+                    ? 'bg-gradient-to-r from-indigo-600 to-slate-700 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Đổi vai trò sang Quản trị viên"
               >
                 <ShieldCheck className="w-3 h-3" />
                 <span className="hidden sm:inline">Quản lý</span>

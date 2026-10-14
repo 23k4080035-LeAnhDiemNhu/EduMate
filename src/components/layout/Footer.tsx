@@ -15,13 +15,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Brand & Mission */}
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-emerald-600 flex items-center justify-center text-white">
                 <GraduationCap className="w-5 h-5" />
               </div>
-              <span className="text-base font-bold text-white">EduMate</span>
+              <span className="text-base font-bold text-white">EduMate Huế</span>
             </div>
+            <p className="text-xs text-slate-300 font-medium italic">
+              “Tìm đúng người dạy – Học đúng điều cần.”
+            </p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Nền tảng hỗ trợ dịch vụ học vụ, tối ưu hóa quy trình tiếp nhận biểu mẫu và đối soát giao dịch dành cho Người học và Ban Quản lý.
+              Nền tảng trung gian kết nối người học và người dạy uy tín dành cho sinh viên và người trẻ tại Thừa Thiên Huế.
             </p>
           </div>
 
