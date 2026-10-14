@@ -137,17 +137,34 @@ export function App() {
     setCurrentUser(updated);
   };
 
+  const [academicParams, setAcademicParams] = useState<{
+    search?: string;
+    district?: string;
+    category?: string;
+    tutorId?: string;
+  }>({});
+
+  const handleNavigate = (page: string, params?: { search?: string; district?: string; category?: string; tutorId?: string }) => {
+    if (params) {
+      setAcademicParams(params);
+    } else {
+      setAcademicParams({});
+    }
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Render the current active page
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage onNavigate={setCurrentPage} currentRole={currentRole} />;
+        return <HomePage onNavigate={handleNavigate} currentRole={currentRole} />;
 
       case 'auth':
         return (
           <AuthPage
             onLoginSuccess={handleLoginSuccess}
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
             showToast={showToast}
           />
         );
@@ -157,7 +174,7 @@ export function App() {
           return (
             <AuthPage
               onLoginSuccess={handleLoginSuccess}
-              onNavigate={setCurrentPage}
+              onNavigate={handleNavigate}
               showToast={showToast}
             />
           );
@@ -166,7 +183,7 @@ export function App() {
           <ProfilePage
             currentUser={currentUser}
             onProfileUpdated={handleProfileUpdated}
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
             showToast={showToast}
           />
         );
@@ -176,7 +193,7 @@ export function App() {
           return (
             <AuthPage
               onLoginSuccess={handleLoginSuccess}
-              onNavigate={setCurrentPage}
+              onNavigate={handleNavigate}
               showToast={showToast}
             />
           );
@@ -184,7 +201,7 @@ export function App() {
         return (
           <SubmitRequestPage
             currentUser={currentUser}
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
             showToast={showToast}
           />
         );
@@ -194,7 +211,7 @@ export function App() {
           return (
             <AuthPage
               onLoginSuccess={handleLoginSuccess}
-              onNavigate={setCurrentPage}
+              onNavigate={handleNavigate}
               showToast={showToast}
             />
           );
@@ -202,7 +219,7 @@ export function App() {
         return (
           <MyRequestsPage
             currentUser={currentUser}
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
             showToast={showToast}
           />
         );
@@ -212,8 +229,9 @@ export function App() {
           <AcademicPage
             currentUser={currentUser}
             currentRole={currentRole}
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
             showToast={showToast}
+            initialParams={academicParams}
           />
         );
 
@@ -222,7 +240,7 @@ export function App() {
           return (
             <AuthPage
               onLoginSuccess={handleLoginSuccess}
-              onNavigate={setCurrentPage}
+              onNavigate={handleNavigate}
               showToast={showToast}
             />
           );
@@ -230,13 +248,13 @@ export function App() {
         return (
           <OrdersPage
             currentUser={currentUser}
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
             showToast={showToast}
           />
         );
 
       case 'admin':
-        if (!currentUser || currentRole !== 'manager') {
+        if (!currentUser || (currentRole !== 'manager' && currentRole !== 'admin')) {
           return (
             <div className="max-w-md mx-auto text-center py-16 space-y-4">
               <div className="text-4xl">🛡️</div>
@@ -246,7 +264,7 @@ export function App() {
               </p>
               <button
                 onClick={() => handleSwitchRole('manager')}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all cursor-pointer"
               >
                 Chuyển sang vai trò Quản lý
               </button>
@@ -256,13 +274,13 @@ export function App() {
         return (
           <AdminPage
             currentUser={currentUser}
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
             showToast={showToast}
           />
         );
 
       default:
-        return <HomePage onNavigate={setCurrentPage} currentRole={currentRole} />;
+        return <HomePage onNavigate={handleNavigate} currentRole={currentRole} />;
     }
   };
 
@@ -274,7 +292,7 @@ export function App() {
       {/* Top Universal Header */}
       <Header
         currentPage={currentPage}
-        onNavigate={setCurrentPage}
+        onNavigate={handleNavigate}
         currentUser={currentUser}
         currentRole={currentRole}
         onSwitchRole={handleSwitchRole}
@@ -287,7 +305,7 @@ export function App() {
       </main>
 
       {/* Universal Footer */}
-      <Footer onNavigate={setCurrentPage} />
+      <Footer onNavigate={handleNavigate} />
     </div>
   );
 }

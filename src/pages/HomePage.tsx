@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 interface HomePageProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, params?: { search?: string; district?: string; category?: string; tutorId?: string }) => void;
   currentRole: UserRole;
 }
 
@@ -29,7 +29,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNavigate('academic');
+    onNavigate('academic', {
+      search: searchSubject.trim(),
+      district: selectedDistrict
+    });
   };
 
   return (
@@ -151,7 +154,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           {categories.map((cat) => (
             <div
               key={cat.id}
-              onClick={() => onNavigate('academic')}
+              onClick={() => onNavigate('academic', { category: cat.name })}
               className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-emerald-500/40 hover:bg-slate-900/60 transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between pb-3">
@@ -305,13 +308,21 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
                   </div>
                 </div>
 
-                <button
-                  onClick={() => onNavigate('academic')}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center space-x-1 cursor-pointer"
-                >
-                  <span>Gửi yêu cầu</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    onClick={() => onNavigate('academic', { tutorId: tutor.id })}
+                    className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    Xem hồ sơ
+                  </button>
+                  <button
+                    onClick={() => onNavigate('academic', { tutorId: tutor.id })}
+                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>Gửi yêu cầu</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

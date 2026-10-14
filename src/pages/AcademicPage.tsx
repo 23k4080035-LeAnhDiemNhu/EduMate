@@ -20,14 +20,22 @@ import {
   BookOpen,
   Users,
   Filter,
-  Check
+  Check,
+  User,
+  Calendar
 } from 'lucide-react';
 
 interface AcademicPageProps {
   currentUser: Profile | null;
   currentRole: UserRole;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, params?: any) => void;
   showToast: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
+  initialParams?: {
+    search?: string;
+    district?: string;
+    category?: string;
+    tutorId?: string;
+  };
 }
 
 export const AcademicPage: React.FC<AcademicPageProps> = ({
@@ -35,20 +43,34 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
   currentRole,
   onNavigate,
   showToast,
+  initialParams,
 }) => {
   // Main view tab: 'tutors' (Danh bạ anh/chị khóa trước) or 'curriculum' (Bảng 38 học phần)
   const [activeTab, setActiveTab] = useState<'tutors' | 'curriculum'>('tutors');
 
   // Filter States for Tutors
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('all');
+  const [searchTerm, setSearchTerm] = useState(initialParams?.search || '');
+  const [selectedDistrict, setSelectedDistrict] = useState(initialParams?.district || 'all');
   const [selectedMode, setSelectedMode] = useState<string>('all');
   const [maxPrice, setMaxPrice] = useState<number>(300000);
-  const [selectedSubjectCategory, setSelectedSubjectCategory] = useState<string>('all');
+  const [selectedSubjectCategory, setSelectedSubjectCategory] = useState<string>(() => {
+    if (initialParams?.category) {
+      if (initialParams.category.includes('Toán')) return 'Toán';
+      if (initialParams.category.includes('Anh')) return 'Tiếng Anh';
+      if (initialParams.category.includes('Lập trình') || initialParams.category.includes('Thông tin')) return 'Lập trình';
+      if (initialParams.category.includes('Kinh tế') || initialParams.category.includes('Kế toán')) return 'Kinh tế';
+      if (initialParams.category.includes('Lý luận')) return 'Lý luận';
+      return initialParams.category;
+    }
+    return 'all';
+  });
 
   // Filter States for 38 Curriculum Table
   const [curriculumSearch, setCurriculumSearch] = useState('');
   const [curriculumCategory, setCurriculumCategory] = useState<string>('all');
+
+  // Load tutors
+  const allTutors = dataService.getTutors(currentRole !== 'manager' && currentRole !== 'admin');
 
   // Registration Modal State (Quy trình B: Người dạy đăng ký hồ sơ)
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -64,6 +86,14 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
   const [regAvailableDays] = useState('Tối thứ 2, Tối thứ 4, Chủ nhật');
   const [regError, setRegError] = useState('');
 
+  // Tutor Detail Modal State (Yêu cầu đặc tả: Trang chi tiết người dạy)
+  const [selectedTutorForDetail, setSelectedTutorForDetail] = useState<TutorProfile | null>(() => {
+    if (initialParams?.tutorId) {
+      return allTutors.find(t => t.id === initialParams.tutorId) || null;
+    }
+    return null;
+  });
+
   // Quick Request Modal State (Quy trình D: Gửi yêu cầu học)
   const [selectedTutorForRequest, setSelectedTutorForRequest] = useState<TutorProfile | null>(null);
   const [requestGoals, setRequestGoals] = useState('');
@@ -77,8 +107,18 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
   // Expanded Reviews Modal State
   const [selectedTutorForReviews, setSelectedTutorForReviews] = useState<TutorProfile | null>(null);
 
-  // Load tutors
-  const allTutors = dataService.getTutors(currentRole !== 'manager' && currentRole !== 'admin');
+  // Auth-guarded handler to open request modal
+  const handleOpenRequest = (tutor: TutorProfile, prefilledSubject?: string) => {
+    if (!currentUser) {
+      showToast('info', 'Yêu cầu đăng nhập', 'Vui lòng đăng nhập hoặc tạo tài khoản Người học trước khi gửi yêu cầu học tập.');
+      onNavigate('auth');
+      return;
+    }
+    setRequestError('');
+    setRequestSubject(prefilledSubject || tutor.subjects[0] || '');
+    setRequestMode(tutor.teaching_mode === 'online' ? 'online' : 'offline');
+    setSelectedTutorForRequest(tutor);
+  };
 
   // Filtered tutors logic
   const filteredTutors = allTutors.filter(tutor => {
@@ -597,22 +637,30 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
-                    <button
-                      onClick={() => setSelectedTutorForReviews(tutor)}
-                      className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer border border-slate-800"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Xem đánh giá ({tutor.rating_count})</span>
-                    </button>
+                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        onClick={() => setSelectedTutorForDetail(tutor)}
+                        className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer border border-slate-800 hover:border-slate-700"
+                        title="Xem toàn bộ hồ sơ, lịch rảnh & minh chứng"
+                      >
+                        <User className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Xem chi tiết</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedTutorForReviews(tutor)}
+                        className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold flex items-center space-x-1 transition-all cursor-pointer border border-slate-800"
+                        title="Xem nhận xét từ người học"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                        <span className="hidden sm:inline">Đánh giá</span>
+                        <span>({tutor.rating_count})</span>
+                      </button>
+                    </div>
 
                     <button
-                      onClick={() => {
-                        setRequestError('');
-                        setRequestSubject(tutor.subjects[0] || '');
-                        setRequestMode(tutor.teaching_mode === 'online' ? 'online' : 'offline');
-                        setSelectedTutorForRequest(tutor);
-                      }}
+                      onClick={() => handleOpenRequest(tutor)}
                       className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center space-x-1.5 cursor-pointer"
                     >
                       <Send className="w-3.5 h-3.5" />
@@ -747,10 +795,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                                 const matchingTutor = allTutors.find(t => 
                                   t.subjects.some(s => s.toLowerCase().includes(item.name.toLowerCase()) || s.toLowerCase().includes(item.code.toLowerCase()))
                                 ) || allTutors[0];
-                                
-                                setRequestError('');
-                                setRequestSubject(`${item.name} (${item.code})`);
-                                setSelectedTutorForRequest(matchingTutor);
+                                handleOpenRequest(matchingTutor, `${item.name} (${item.code})`);
                               }}
                               className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-[11px] font-bold transition-all shadow-sm cursor-pointer flex items-center space-x-1"
                             >
@@ -768,6 +813,184 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 0: XEM CHI TIẾT HỒ SƠ NGƯỜI DẠY (YÊU CẦU ĐẶC TẢ MỤC 4) */}
+      {/* ========================================================================= */}
+      {selectedTutorForDetail && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
+            
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-start space-x-4">
+                <img
+                  src={selectedTutorForDetail.avatar_url}
+                  alt={selectedTutorForDetail.full_name}
+                  className="w-16 h-16 rounded-2xl object-cover ring-2 ring-emerald-500/30 shrink-0"
+                />
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h2 className="text-lg font-bold text-white">{selectedTutorForDetail.full_name}</h2>
+                    {selectedTutorForDetail.verification_status === 'verified' && (
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 flex items-center space-x-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>Đã xác minh</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-300 font-medium mt-0.5">{selectedTutorForDetail.headline}</p>
+                  <div className="flex items-center space-x-3 mt-1 text-xs text-slate-400">
+                    <span className="flex items-center space-x-1 text-amber-400 font-bold">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      <span>{selectedTutorForDetail.rating_avg > 0 ? selectedTutorForDetail.rating_avg.toFixed(1) : 'Chưa có'}</span>
+                      <span className="text-slate-500 font-normal">({selectedTutorForDetail.rating_count} đánh giá)</span>
+                    </span>
+                    <span>•</span>
+                    <span>{selectedTutorForDetail.experience_years} năm kinh nghiệm</span>
+                    <span>•</span>
+                    <span className="text-emerald-400 flex items-center space-x-0.5">
+                      <MapPin className="w-3 h-3" />
+                      <span>{selectedTutorForDetail.district}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedTutorForDetail(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Teaching Fee & Mode Banner */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs">
+              <div>
+                <div className="text-[10px] text-slate-500">Mức phí đề xuất</div>
+                <div className="text-sm font-black text-emerald-400">
+                  {selectedTutorForDetail.hourly_rate.toLocaleString('vi-VN')} đ <span className="text-[10px] text-slate-400 font-normal">/ buổi (2h)</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500">Hình thức giảng dạy</div>
+                <div className="text-xs font-semibold text-slate-200">
+                  {selectedTutorForDetail.teaching_mode === 'both' ? 'Trực tiếp & Online' : selectedTutorForDetail.teaching_mode === 'offline' ? 'Trực tiếp tại Huế' : 'Chỉ dạy Online'}
+                </div>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <div className="text-[10px] text-slate-500">Trạng thái nhận kèm</div>
+                <div className="text-xs font-semibold text-emerald-400">Sẵn sàng nhận học viên</div>
+              </div>
+            </div>
+
+            {/* Bio & Teaching Methodology */}
+            <div className="space-y-1.5 text-xs">
+              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Giới thiệu & Phương pháp giảng dạy</h4>
+              <p className="text-slate-300 leading-relaxed bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80">
+                {selectedTutorForDetail.bio}
+              </p>
+            </div>
+
+            {/* Available Schedule (Lịch rảnh) */}
+            <div className="space-y-1.5 text-xs">
+              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
+                <Clock className="w-3.5 h-3.5 text-blue-400" />
+                <span>Khung giờ & Lịch rảnh nhận học viên</span>
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {selectedTutorForDetail.available_days?.map((day, idx) => (
+                  <span key={idx} className="px-3 py-1 rounded-xl bg-blue-950/40 text-blue-300 border border-blue-800/50 text-[11px] font-medium flex items-center space-x-1">
+                    <Calendar className="w-3 h-3 text-blue-400" />
+                    <span>{day}</span>
+                  </span>
+                )) || <span className="text-slate-500 italic">Linh hoạt theo lịch học viên</span>}
+              </div>
+            </div>
+
+            {/* Subjects / Học phần có thể kèm */}
+            <div className="space-y-1.5 text-xs">
+              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Học phần đại học có thể kèm</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedTutorForDetail.subjects.map((s, idx) => (
+                  <span key={idx} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-950 text-emerald-300 border border-slate-800">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Certifications if any */}
+            {selectedTutorForDetail.certifications && (
+              <div className="space-y-1.5 text-xs">
+                <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] flex items-center space-x-1 text-amber-400">
+                  <Award className="w-3.5 h-3.5" />
+                  <span>Chứng chỉ & Thành tích nổi bật</span>
+                </h4>
+                <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-800/30 text-amber-200/90 text-xs">
+                  {selectedTutorForDetail.certifications}
+                </div>
+              </div>
+            )}
+
+            {/* Real Reviews */}
+            <div className="space-y-2 text-xs pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
+                  Đánh giá thực tế từ học viên ({dataService.getReviews(selectedTutorForDetail.id).length})
+                </h4>
+              </div>
+
+              <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                {dataService.getReviews(selectedTutorForDetail.id).length === 0 ? (
+                  <p className="text-slate-500 italic text-[11px] py-2">
+                    Chưa có đánh giá nào. Đánh giá chỉ được tạo sau khi học viên hoàn thành khóa học thực tế.
+                  </p>
+                ) : (
+                  dataService.getReviews(selectedTutorForDetail.id).map(rev => (
+                    <div key={rev.id} className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-white">{rev.student_name}</span>
+                        <div className="flex items-center space-x-0.5 text-amber-400">
+                          {Array.from({ length: rev.rating }).map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-amber-400" />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-slate-300 text-[11px] leading-relaxed">{rev.comment}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end space-x-2.5 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setSelectedTutorForDetail(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+              >
+                Đóng
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const tutor = selectedTutorForDetail;
+                  setSelectedTutorForDetail(null);
+                  handleOpenRequest(tutor);
+                }}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 cursor-pointer flex items-center space-x-1.5"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Gửi yêu cầu học tập cho anh/chị</span>
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 

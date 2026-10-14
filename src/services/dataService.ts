@@ -16,7 +16,8 @@ import type {
   RequestStatus,
   PaymentStatus,
   OrderStatus,
-  CourseSubject
+  CourseSubject,
+  ReportItem
 } from '../types';
 import { EDUMATE_SUBJECTS, SUBJECT_CATEGORIES } from '../data/subjects';
 
@@ -301,6 +302,20 @@ const initialReviews: Review[] = [
 
 const initialCategories: SubjectCategory[] = SUBJECT_CATEGORIES;
 
+const initialReports: ReportItem[] = [
+  {
+    id: 'rep-01',
+    reporter_id: 'usr-student-02',
+    reporter_name: 'Lê Thị Bình',
+    target_id: 'tut-01',
+    target_name: 'Anh Lê Hoàng Nam (K44)',
+    type: 'tutor_profile',
+    reason: 'Người dạy dời lịch học sát giờ 2 lần liên tiếp do bận việc gấp ở trường.',
+    status: 'pending',
+    created_at: '2026-10-13T10:00:00Z'
+  }
+];
+
 // ==============================================================================
 // LEGACY COMPATIBILITY INITIAL DATA
 // ==============================================================================
@@ -396,6 +411,10 @@ class DataStore {
       return initialProfiles;
     }
     return cached;
+  }
+
+  getUsers(): Profile[] {
+    return this.getProfiles();
   }
 
   getProfileById(id: string): Profile | null {
@@ -494,6 +513,10 @@ class DataStore {
     return newTutor;
   }
 
+  registerTutor(data: Omit<TutorProfile, 'id' | 'verification_status' | 'rating_avg' | 'rating_count' | 'created_at' | 'updated_at'>): TutorProfile {
+    return this.registerTutorProfile(data);
+  }
+
   verifyTutor(tutorId: string, status: 'verified' | 'rejected', adminId: string, adminName: string): TutorProfile | null {
     const admin = this.getProfileById(adminId);
     if (!admin || !['manager', 'admin'].includes(admin.role)) {
@@ -514,6 +537,27 @@ class DataStore {
     };
     this.set('tutors', tutors);
     this.logAction('tutor_profiles', tutorId, status === 'verified' ? 'APPROVE' : 'REJECT', adminId, adminName, old, tutors[idx]);
+    return tutors[idx];
+  }
+
+  updateTutorProfile(tutorId: string, updates: Partial<TutorProfile>, userId: string): TutorProfile | null {
+    const tutors = this.getTutors(false);
+    const idx = tutors.findIndex(t => t.id === tutorId || t.user_id === userId);
+    if (idx === -1) throw new Error('NOT FOUND: Không tìm thấy hồ sơ người dạy.');
+    
+    const user = this.getProfileById(userId);
+    if (tutors[idx].user_id !== userId && (!user || !['manager', 'admin'].includes(user.role))) {
+      throw new Error('UNAUTHORIZED: Bạn không có quyền cập nhật hồ sơ người dạy này.');
+    }
+
+    const old = { ...tutors[idx] };
+    tutors[idx] = {
+      ...tutors[idx],
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+    this.set('tutors', tutors);
+    this.logAction('tutor_profiles', tutors[idx].id, 'UPDATE', userId, user?.full_name, old, tutors[idx]);
     return tutors[idx];
   }
 
@@ -660,6 +704,114 @@ class DataStore {
     }
 
     return newRev;
+  }
+
+  deleteReview(reviewId: string, managerId: string, managerName: string): boolean {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Quản trị viên mới có quyền xóa hoặc kiểm duyệt đánh giá.');
+    }
+    const reviews = this.getReviews();
+    const idx = reviews.findIndex(r => r.id === reviewId);
+    if (idx === -1) return false;
+    const removed = reviews[idx];
+    reviews.splice(idx, 1);
+    this.set('reviews', reviews);
+
+    // Recalculate tutor's rating average
+    const tutors = this.getTutors();
+    const tutorIdx = tutors.findIndex(t => t.id === removed.tutor_id);
+    if (tutorIdx !== -1) {
+      const tutorReviews = reviews.filter(r => r.tutor_id === removed.tutor_id);
+      if (tutorReviews.length > 0) {
+        const avg = tutorReviews.reduce((sum, r) => sum + r.rating, 0) / tutorReviews.length;
+        tutors[tutorIdx].rating_avg = Math.round(avg * 10) / 10;
+        tutors[tutorIdx].rating_count = tutorReviews.length;
+      } else {
+        tutors[tutorIdx].rating_avg = 5.0;
+        tutors[tutorIdx].rating_count = 0;
+      }
+      this.set('tutors', tutors);
+    }
+    this.logAction('reviews', reviewId, 'DELETE', managerId, managerName, removed, null);
+    return true;
+  }
+
+  // ----------------------------------------------------------------------------
+  // User Accounts & Roles Management
+  // ----------------------------------------------------------------------------
+  updateUserRole(userId: string, newRole: UserRole, managerId: string, managerName: string): Profile | null {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Quản trị viên mới có quyền cập nhật vai trò người dùng.');
+    }
+    const profiles = this.getProfiles();
+    const idx = profiles.findIndex(p => p.id === userId);
+    if (idx === -1) return null;
+    const old = { ...profiles[idx] };
+    profiles[idx].role = newRole;
+    profiles[idx].updated_at = new Date().toISOString();
+    this.set('profiles', profiles);
+    this.logAction('profiles', userId, 'UPDATE', managerId, managerName, old, profiles[idx]);
+    return profiles[idx];
+  }
+
+  toggleUserStatus(userId: string, managerId: string, managerName: string): Profile | null {
+    const mgr = this.getProfileById(managerId);
+    if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+      throw new Error('UNAUTHORIZED: Chỉ Quản trị viên mới có quyền khóa/mở khóa tài khoản.');
+    }
+    const profiles = this.getProfiles();
+    const idx = profiles.findIndex(p => p.id === userId);
+    if (idx === -1) return null;
+    const old = { ...profiles[idx] };
+    profiles[idx].status = profiles[idx].status === 'active' ? 'suspended' : 'active';
+    profiles[idx].updated_at = new Date().toISOString();
+    this.set('profiles', profiles);
+    this.logAction('profiles', userId, 'UPDATE', managerId, managerName, old, profiles[idx]);
+    return profiles[idx];
+  }
+
+  // ----------------------------------------------------------------------------
+  // Reports & Disputes (Phản ánh & Khiếu nại)
+  // ----------------------------------------------------------------------------
+  getReports(): ReportItem[] {
+    return this.get<ReportItem[]>('reports', initialReports);
+  }
+
+  createReport(data: Omit<ReportItem, 'id' | 'created_at' | 'status'>): ReportItem {
+    if (!data.reason || data.reason.trim().length < 5) {
+      throw new Error('VALIDATION ERROR: Vui lòng nhập lý do phản ánh tối thiểu 5 ký tự.');
+    }
+    const reports = this.getReports();
+    const newReport: ReportItem = {
+      ...data,
+      id: `rep-${Date.now()}`,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    };
+    reports.unshift(newReport);
+    this.set('reports', reports);
+    this.logAction('reports', newReport.id, 'CREATE', data.reporter_id, data.reporter_name, null, newReport);
+    return newReport;
+  }
+
+  resolveReport(reportId: string, status: 'resolved' | 'dismissed', notes?: string, managerId?: string, managerName?: string): ReportItem | null {
+    if (managerId) {
+      const mgr = this.getProfileById(managerId);
+      if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
+        throw new Error('UNAUTHORIZED: Chỉ Quản trị viên mới có quyền xử lý phản ánh.');
+      }
+    }
+    const reports = this.getReports();
+    const idx = reports.findIndex(r => r.id === reportId);
+    if (idx === -1) return null;
+    const old = { ...reports[idx] };
+    reports[idx].status = status;
+    reports[idx].resolution_notes = notes ? notes.trim() : undefined;
+    this.set('reports', reports);
+    this.logAction('reports', reportId, status === 'resolved' ? 'APPROVE' : 'REJECT', managerId || 'system', managerName || 'Quản trị viên', old, reports[idx]);
+    return reports[idx];
   }
 
   // ----------------------------------------------------------------------------
