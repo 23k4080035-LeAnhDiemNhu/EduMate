@@ -39,35 +39,6 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   onNavigate,
   showToast,
 }) => {
-  // SECURITY & ACCESS CONTROL GUARD:
-  // Strictly disallow non-manager users from viewing or interacting with admin workbench
-  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') {
-    return (
-      <div className="max-w-2xl mx-auto my-12 p-8 glass-panel rounded-3xl border border-rose-800/40 text-center space-y-4 animate-fadeIn">
-        <div className="w-16 h-16 mx-auto rounded-full bg-rose-950/60 border border-rose-500/40 flex items-center justify-center text-rose-400">
-          <ShieldAlert className="w-8 h-8" />
-        </div>
-        <h2 className="text-xl font-bold text-white">Truy Cập Bị Từ Chối (403 Forbidden)</h2>
-        <p className="text-xs sm:text-sm text-slate-300">
-          Bạn đang đăng nhập với vai trò <strong>Sinh viên / Người học</strong>.
-        </p>
-        <p className="text-xs text-slate-400">
-          Hệ thống bảo mật Row Level Security và phân quyền EduMate đã ngăn chặn hiển thị dữ liệu quản trị. Chỉ tài khoản <strong>Người Quản Lý (Manager/Admin)</strong> mới có quyền truy cập khu vực này.
-        </p>
-        {onNavigate && (
-          <div className="pt-2">
-            <button
-              onClick={() => onNavigate('home')}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md"
-            >
-              Trở về Trang chủ
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   const [adminTab, setAdminTab] = useState<'tutors' | 'learning_requests' | 'requests' | 'academic' | 'reconciliation' | 'audit'>('tutors');
 
   // Datasets from service
@@ -101,18 +72,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     status: 'published' as AcademicStatus,
   });
 
-  const reloadData = async () => {
-    try {
-      if (isSupabaseConfigured) {
-        const liveReqs = await supabaseFetchRequests();
-        setRequests(liveReqs);
-      } else {
-        setRequests(dataService.getRequests());
-      }
-    } catch (err: any) {
-      console.warn('Reload requests error:', err);
-      setRequests(dataService.getRequests());
-    }
+  const reloadData = () => {
+    setRequests(dataService.getRequests());
     setAcademicItems(dataService.getAcademicItems());
     setOrders(dataService.getOrders());
     setPayments(dataService.getPayments());
@@ -122,7 +83,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   };
 
   useEffect(() => {
-    reloadData();
+    if (!isSupabaseConfigured) return;
+    supabaseFetchRequests()
+      .then(liveReqs => setRequests(liveReqs))
+      .catch(err => console.warn('Supabase fetch error:', err));
   }, []);
 
   // Tutor Verification logic (Quy trình B)
@@ -235,6 +199,35 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       (r.form_type_title && r.form_type_title.toLowerCase().includes(requestSearchTerm.toLowerCase()));
     return matchesStatus && matchesSearch;
   });
+
+  // SECURITY & ACCESS CONTROL GUARD:
+  // Strictly disallow non-manager users from viewing or interacting with admin workbench
+  if (currentUser.role !== 'manager' && currentUser.role !== 'admin') {
+    return (
+      <div className="max-w-2xl mx-auto my-12 p-8 glass-panel rounded-3xl border border-rose-800/40 text-center space-y-4 animate-fadeIn">
+        <div className="w-16 h-16 mx-auto rounded-full bg-rose-950/60 border border-rose-500/40 flex items-center justify-center text-rose-400">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-white">Truy Cập Bị Từ Chối (403 Forbidden)</h2>
+        <p className="text-xs sm:text-sm text-slate-300">
+          Bạn đang đăng nhập với vai trò <strong>{currentUser.role === 'tutor' ? 'Người dạy (Tutor)' : 'Sinh viên / Người học'}</strong>.
+        </p>
+        <p className="text-xs text-slate-400">
+          Hệ thống bảo mật Row Level Security và phân quyền EduMate đã ngăn chặn hiển thị dữ liệu quản trị. Chỉ tài khoản <strong>Người Quản Lý (Manager/Admin)</strong> mới có quyền truy cập khu vực này.
+        </p>
+        {onNavigate && (
+          <div className="pt-2">
+            <button
+              onClick={() => onNavigate('home')}
+              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md"
+            >
+              Trở về Trang chủ
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fadeIn">

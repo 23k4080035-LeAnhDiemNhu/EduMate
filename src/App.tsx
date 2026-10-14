@@ -32,6 +32,23 @@ export function App() {
     return profiles.find(p => p.role === 'student') || profiles[0] || null;
   });
 
+  // Global Toast System
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (type: ToastType, title: string, message?: string) => {
+    const newToast: ToastMessage = {
+      id: `toast-${Date.now()}-${Math.random()}`,
+      type,
+      title,
+      message,
+    };
+    setToasts((prev) => [...prev, newToast]);
+  };
+
+  const handleDismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   // Khôi phục trạng thái phiên làm việc khi tải ứng dụng (Supabase Auth Session Restore)
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -66,23 +83,6 @@ export function App() {
     };
   }, []);
 
-  // Global Toast System
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-  const showToast = (type: ToastType, title: string, message?: string) => {
-    const newToast: ToastMessage = {
-      id: `toast-${Date.now()}-${Math.random()}`,
-      type,
-      title,
-      message,
-    };
-    setToasts((prev) => [...prev, newToast]);
-  };
-
-  const handleDismissToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-
   // Switch role handler: Automatically syncs with a profile matching that role
   const handleSwitchRole = (newRole: UserRole) => {
     setCurrentRole(newRole);
@@ -92,10 +92,15 @@ export function App() {
 
     // Contextual redirection
     if (newRole === 'manager') {
-      if (['submit-request', 'my-requests', 'orders'].includes(currentPage)) {
+      if (['submit-request', 'orders'].includes(currentPage)) {
         setCurrentPage('admin');
       }
       showToast('info', 'Đã chuyển sang vai trò Quản lý', `Tài khoản: ${matchingProfile.full_name}`);
+    } else if (newRole === 'tutor') {
+      if (currentPage === 'admin' || currentPage === 'submit-request') {
+        setCurrentPage('my-requests');
+      }
+      showToast('info', 'Đã chuyển sang vai trò Người dạy (Tutor)', `Tài khoản: ${matchingProfile.full_name}`);
     } else {
       if (currentPage === 'admin') {
         setCurrentPage('home');

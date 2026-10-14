@@ -12,8 +12,8 @@ import {
   Mail, 
   User, 
   Phone, 
-  ShieldCheck, 
   UserCheck, 
+  GraduationCap,
   ArrowRight, 
   Loader2,
   AlertCircle
@@ -238,7 +238,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
             <>
               <div>
                 <label className="block text-slate-300 font-medium mb-1">
-                  Vai trò đăng ký:
+                  Vai trò đăng ký tài khoản:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -246,25 +246,31 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
                     onClick={() => setRole('student')}
                     className={`p-2.5 rounded-xl border text-left flex items-center space-x-2 transition-all cursor-pointer ${
                       role === 'student'
-                        ? 'border-emerald-500 bg-emerald-950/20 text-emerald-300'
+                        ? 'border-emerald-500 bg-emerald-950/30 text-emerald-300 shadow-sm'
                         : 'border-slate-800 bg-slate-900/60 text-slate-400'
                     }`}
                   >
-                    <UserCheck className="w-4 h-4 shrink-0" />
-                    <span className="font-semibold">Sinh viên / Người học</span>
+                    <UserCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <div>
+                      <div className="font-semibold text-white">Người học</div>
+                      <div className="text-[10px] text-slate-400">Tìm gia sư & học tập</div>
+                    </div>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setRole('manager')}
+                    onClick={() => setRole('tutor')}
                     className={`p-2.5 rounded-xl border text-left flex items-center space-x-2 transition-all cursor-pointer ${
-                      role === 'manager'
-                        ? 'border-indigo-500 bg-indigo-950/20 text-indigo-300'
+                      role === 'tutor'
+                        ? 'border-blue-500 bg-blue-950/30 text-blue-300 shadow-sm'
                         : 'border-slate-800 bg-slate-900/60 text-slate-400'
                     }`}
                   >
-                    <ShieldCheck className="w-4 h-4 shrink-0" />
-                    <span className="font-semibold">Quản lý / Giáo vụ</span>
+                    <GraduationCap className="w-4 h-4 shrink-0 text-blue-400" />
+                    <div>
+                      <div className="font-semibold text-white">Người dạy</div>
+                      <div className="text-[10px] text-slate-400">Dạy kèm & chia sẻ</div>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -357,7 +363,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
+            className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -366,7 +372,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
               </>
             ) : (
               <>
-                <span>{mode === 'login' ? 'Đăng nhập vào hệ thống' : 'Hoàn tất đăng ký'}</span>
+                <span>{mode === 'login' ? 'Đăng nhập vào hệ thống' : 'Hoàn tất đăng ký tài khoản'}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -376,34 +382,34 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
         {/* Demo Fast Logins Section */}
         <div className="pt-4 border-t border-slate-800 space-y-2">
           <div className="text-[11px] text-slate-400 font-semibold text-center">
-            Tài khoản dùng thử nghiệm có sẵn:
+            Tài khoản dùng thử theo 3 vai trò hệ thống:
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs">
             <button
               type="button"
               onClick={() => handleQuickLogin('sinhvien@edumate.vn')}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer"
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer group"
             >
-              <div className="text-[9px] text-emerald-400 font-bold uppercase">Sinh viên 1</div>
-              <div className="font-semibold truncate text-[11px]">Văn An</div>
+              <div className="text-[9px] text-emerald-400 font-bold uppercase">Người học</div>
+              <div className="font-semibold truncate text-[11px] group-hover:text-emerald-300">Văn An</div>
             </button>
 
             <button
               type="button"
-              onClick={() => handleQuickLogin('sinhvien2@edumate.vn')}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer"
+              onClick={() => handleQuickLogin('tutor@edumate.vn')}
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer group"
             >
-              <div className="text-[9px] text-teal-400 font-bold uppercase">Sinh viên 2</div>
-              <div className="font-semibold truncate text-[11px]">Thị Bình</div>
+              <div className="text-[9px] text-blue-400 font-bold uppercase">Người dạy (Gia sư)</div>
+              <div className="font-semibold truncate text-[11px] group-hover:text-blue-300">Thầy Nam</div>
             </button>
 
             <button
               type="button"
               onClick={() => handleQuickLogin('quanly@edumate.vn')}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer"
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer group"
             >
-              <div className="text-[9px] text-indigo-400 font-bold uppercase">Quản lý</div>
-              <div className="font-semibold truncate text-[11px]">Thị Mai</div>
+              <div className="text-[9px] text-indigo-400 font-bold uppercase">Quản trị viên</div>
+              <div className="font-semibold truncate text-[11px] group-hover:text-slate-200">Cô Mai</div>
             </button>
           </div>
 

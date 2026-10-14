@@ -26,7 +26,9 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
   onNavigate,
   showToast,
 }) => {
-  const [requests, setRequests] = useState<LearningRequest[]>([]);
+  const [requests, setRequests] = useState<LearningRequest[]>(() =>
+    dataService.getLearningRequests(currentUser.id, currentUser.role)
+  );
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -42,12 +44,13 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
   const [reviewError, setReviewError] = useState('');
 
   const loadRequests = () => {
-    const list = dataService.getLearningRequests(currentUser.id, currentUser.role);
-    setRequests(list);
+    setRequests(dataService.getLearningRequests(currentUser.id, currentUser.role));
   };
 
   useEffect(() => {
-    loadRequests();
+    queueMicrotask(() => {
+      setRequests(dataService.getLearningRequests(currentUser.id, currentUser.role));
+    });
   }, [currentUser.id, currentUser.role]);
 
   // Handle Learner Cancels Request (Only when pending)
