@@ -134,13 +134,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         };
       case 'tutor':
         return {
-          label: 'Người Dạy / Gia Sư',
+          label: 'Người Dạy (Anh/Chị Khóa Trước)',
           classes: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
         };
       case 'student':
       default:
         return {
-          label: 'Người Học / Sinh Viên',
+          label: 'Người Học (Sinh Viên Khóa Dưới)',
           classes: 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
         };
     }

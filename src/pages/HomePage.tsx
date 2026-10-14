@@ -43,7 +43,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           
           <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Nền tảng kết nối Người học & Người dạy tiên phong tại Huế</span>
+            <span>Mô hình kết nối Sinh viên Khóa Trước kèm Khóa Dưới tại Huế</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
@@ -54,7 +54,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
-            EduMate là nền tảng trung gian hỗ trợ sinh viên và người trẻ tại <strong>Thừa Thiên Huế</strong> tìm kiếm gia sư, người hướng dẫn ôn thi đại học, ngoại ngữ và kỹ năng lập trình phù hợp với ngân sách và thời gian.
+            EduMate kết nối sinh viên Đại học Huế với các <strong>anh/chị khóa trước (thủ khoa, sinh viên giỏi K43 - K46)</strong> đã vượt qua 38 học phần đại học với điểm A/A+, sẵn sàng chia sẻ đề thi, đề cương và kèm 1-1 sát với cấu trúc thi học kỳ.
           </p>
 
           {/* Quick Search Bar */}
@@ -70,7 +70,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
                   type="text"
                   value={searchSubject}
                   onChange={(e) => setSearchSubject(e.target.value)}
-                  placeholder="Môn học, kỹ năng (Toán, IELTS, React...)"
+                  placeholder="Mã môn (ECO2013, KTPT...), tên học phần..."
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all"
                 />
               </div>
@@ -99,7 +99,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
                   className="w-full h-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
                 >
                   <Search className="w-3.5 h-3.5" />
-                  <span>Tìm người dạy</span>
+                  <span>Tìm anh/chị khóa trước</span>
                 </button>
               </div>
             </form>
@@ -109,15 +109,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
             <span className="flex items-center space-x-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>100% Hồ sơ đã kiểm duyệt bằng cấp</span>
+              <span>100% Anh/Chị khóa trước đạt điểm A/A+</span>
             </span>
             <span className="flex items-center space-x-1.5">
               <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>Chỉ đánh giá sau khi hoàn thành</span>
+              <span>Chia sẻ đề cương & đề thi các năm</span>
             </span>
             <span className="flex items-center space-x-1.5">
               <Users className="w-4 h-4 text-teal-400" />
-              <span>Học trực tiếp tại Huế & Trực tuyến</span>
+              <span>Kèm 1-1 tại Huế hoặc Online</span>
             </span>
           </div>
 
@@ -212,10 +212,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
               <span>Hồ sơ đã kiểm duyệt bởi Quản trị viên EduMate</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white">
-              Đội ngũ Người dạy tiêu biểu tại Huế
+              Đội ngũ Anh/Chị Khóa Trước Tiêu Biểu Tại Huế
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Thủ khoa, cử nhân sư phạm và kỹ sư giàu kinh nghiệm thực chiến
+              Thủ khoa học phần, sinh viên giỏi khóa trên (K43, K44, K45, K46) nắm chắc đề thi và bài tập lớn
             </p>
           </div>
           <button
@@ -381,7 +381,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
             onClick={() => onNavigate('academic')}
             className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-2 cursor-pointer"
           >
-            <span>Duyệt danh sách Người dạy ngay</span>
+            <span>Duyệt danh sách Anh/Chị Khóa Trước ngay</span>
             <ArrowRight className="w-4 h-4" />
           </button>
           
@@ -389,7 +389,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
             onClick={() => onNavigate('academic')}
             className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-200 text-xs font-bold transition-all cursor-pointer"
           >
-            Đăng ký làm Người dạy (Tutor)
+            Đăng ký làm Người dạy (Khóa trước)
           </button>
         </div>
 

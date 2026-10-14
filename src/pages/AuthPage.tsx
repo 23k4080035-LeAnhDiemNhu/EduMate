@@ -253,7 +253,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
                     <UserCheck className="w-4 h-4 shrink-0 text-emerald-400" />
                     <div>
                       <div className="font-semibold text-white">Người học</div>
-                      <div className="text-[10px] text-slate-400">Tìm gia sư & học tập</div>
+                      <div className="text-[10px] text-slate-400">Tìm anh/chị khóa trước</div>
                     </div>
                   </button>
 
@@ -268,8 +268,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
                   >
                     <GraduationCap className="w-4 h-4 shrink-0 text-blue-400" />
                     <div>
-                      <div className="font-semibold text-white">Người dạy</div>
-                      <div className="text-[10px] text-slate-400">Dạy kèm & chia sẻ</div>
+                      <div className="font-semibold text-white">Anh/Chị khóa trước</div>
+                      <div className="text-[10px] text-slate-400">Kèm 1-1 & chia sẻ đề</div>
                     </div>
                   </button>
                 </div>
@@ -399,8 +399,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
               onClick={() => handleQuickLogin('tutor@edumate.vn')}
               className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer group"
             >
-              <div className="text-[9px] text-blue-400 font-bold uppercase">Người dạy (Gia sư)</div>
-              <div className="font-semibold truncate text-[11px] group-hover:text-blue-300">Thầy Nam</div>
+              <div className="text-[9px] text-blue-400 font-bold uppercase">Người dạy (Khóa trước)</div>
+              <div className="font-semibold truncate text-[11px] group-hover:text-blue-300">Anh Nam (K44)</div>
             </button>
 
             <button
@@ -409,7 +409,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, onNavigate, 
               className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-500/50 text-slate-300 hover:text-white transition-all text-left cursor-pointer group"
             >
               <div className="text-[9px] text-indigo-400 font-bold uppercase">Quản trị viên</div>
-              <div className="font-semibold truncate text-[11px] group-hover:text-slate-200">Cô Mai</div>
+              <div className="font-semibold truncate text-[11px] group-hover:text-slate-200">Chị Mai (QL)</div>
             </button>
           </div>
 

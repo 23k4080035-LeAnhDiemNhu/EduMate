@@ -24,7 +24,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               “Tìm đúng người dạy – Học đúng điều cần.”
             </p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Nền tảng trung gian kết nối người học và người dạy uy tín dành cho sinh viên và người trẻ tại Thừa Thiên Huế.
+              Nền tảng trung gian kết nối người học và anh/chị khóa trước uy tín tại Huế, hỗ trợ ôn thi và kèm 1-1 theo 38 học phần đại học chuẩn.
             </p>
           </div>
 

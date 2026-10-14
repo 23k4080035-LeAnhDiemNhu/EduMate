@@ -36,7 +36,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
   onNavigate,
   showToast,
 }) => {
-  // Main view tab: 'tutors' (Danh bạ gia sư) or 'curriculum' (Bảng 38 học phần)
+  // Main view tab: 'tutors' (Danh bạ anh/chị khóa trước) or 'curriculum' (Bảng 38 học phần)
   const [activeTab, setActiveTab] = useState<'tutors' | 'curriculum'>('tutors');
 
   // Filter States for Tutors
@@ -190,7 +190,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
         user_id: currentUser?.id || `usr-${Date.now()}`,
         full_name: regFullName.trim(),
         headline: regHeadline.trim(),
-        bio: regBio.trim() || 'Giảng viên/Gia sư chuyên trách hỗ trợ học phần tại Huế.',
+        bio: regBio.trim() || 'Sinh viên khóa trên chuyên trách chia sẻ tài liệu và kèm học phần tại Huế.',
         avatar_url: currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300',
         subjects: finalSubjects,
         hourly_rate: regRate,
@@ -273,14 +273,14 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
           <div className="flex items-center space-x-2">
             <h1 className="text-2xl font-extrabold text-white flex items-center space-x-2">
               <GraduationCap className="w-6 h-6 text-emerald-400" />
-              <span>Tìm Đúng Người Dạy & Tra Cứu Học Phần</span>
+              <span>Tìm Đúng Anh/Chị Khóa Trước & Tra Cứu Học Phần</span>
             </h1>
             <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              {activeTab === 'tutors' ? `${filteredTutors.length} gia sư khả dụng` : `${filteredCurriculum.length} / 38 học phần`}
+              {activeTab === 'tutors' ? `${filteredTutors.length} anh/chị sẵn sàng` : `${filteredCurriculum.length} / 38 học phần`}
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Nền tảng kết nối người học và người dạy tại Huế • Hỗ trợ đề cương, ôn thi và bài tập lớn 38 học phần đại học chuẩn
+            Nền tảng kết nối sinh viên Đại học Huế với anh/chị khóa trước (K43 - K46) • Chia sẻ đề cương, đề thi và kèm 1-1 theo 38 học phần chuẩn
           </p>
         </div>
 
@@ -293,13 +293,13 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
             className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center space-x-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Đăng ký làm Người dạy</span>
+            <span>Đăng ký làm Người dạy (Khóa trước)</span>
           </button>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* VIEW TABS SWITCHER: DANH BẠ GIA SƯ VS BẢNG 38 HỌC PHẦN */}
+      {/* VIEW TABS SWITCHER: DANH BẠ ANH/CHỊ KHÓA TRƯỚC VS BẢNG 38 HỌC PHẦN */}
       {/* ========================================================================= */}
       <div className="flex items-center p-1 bg-slate-900/90 rounded-2xl border border-slate-800 max-w-md">
         <button
@@ -311,7 +311,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Danh Bạ Người Dạy ({allTutors.length})</span>
+          <span>Danh Bạ Anh/Chị Khóa Trước ({allTutors.length})</span>
         </button>
 
         <button
@@ -328,7 +328,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* TAB 1: DANH BẠ GIA SƯ & BỘ LỌC NGƯỜI DẠY */}
+      {/* TAB 1: DANH BẠ ANH/CHỊ KHÓA TRƯỚC & BỘ LỌC */}
       {/* ========================================================================= */}
       {activeTab === 'tutors' && (
         <div className="space-y-6">
@@ -343,7 +343,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Tên người dạy, mã môn (ECO2013, KTPT...)..."
+                  placeholder="Tên anh/chị, mã môn (ECO2013, KTPT...)..."
                   className="w-full pl-9 pr-3 py-2 bg-slate-900 rounded-xl border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -474,7 +474,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
           {/* TUTOR CARDS GRID */}
           {filteredTutors.length === 0 ? (
             <EmptyState
-              title="Không tìm thấy người dạy phù hợp"
+              title="Không tìm thấy anh/chị khóa trước phù hợp"
               description="Thử mở rộng bộ lọc mức phí hoặc chọn xem trực tiếp danh sách 38 học phần đại học để gửi yêu cầu."
               actionText="Xem 38 Học phần Đại học"
               onAction={() => setActiveTab('curriculum')}
@@ -661,7 +661,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
 
             <div className="flex flex-wrap items-center justify-between text-xs text-slate-400 pt-1">
               <span>Hiển thị <strong>{filteredCurriculum.length}</strong> trên tổng số 38 học phần</span>
-              <span className="text-[11px] text-emerald-400">Nhấn "Tìm người dạy" để xem danh sách gia sư dạy từng môn tương ứng</span>
+              <span className="text-[11px] text-emerald-400">Nhấn "Tìm anh/chị" để xem danh sách anh/chị khóa trước kèm từng môn tương ứng</span>
             </div>
           </div>
 
@@ -676,7 +676,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                     <th className="py-3.5 px-4 min-w-[220px]">Tên học phần</th>
                     <th className="py-3.5 px-4 hidden md:table-cell min-w-[200px]">Khối chuyên ngành</th>
                     <th className="py-3.5 px-3 text-center w-20">Tín chỉ</th>
-                    <th className="py-3.5 px-4 text-center w-28">Người dạy</th>
+                    <th className="py-3.5 px-4 text-center w-28">Khóa trước kèm</th>
                     <th className="py-3.5 px-4 text-right w-48">Thao tác</th>
                   </tr>
                 </thead>
@@ -736,10 +736,10 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                             <button
                               onClick={() => handleFilterTutorsBySubject(item.name)}
                               className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition-colors cursor-pointer flex items-center space-x-1"
-                              title={`Xem các gia sư dạy môn ${item.name}`}
+                              title={`Xem anh/chị khóa trước kèm môn ${item.name}`}
                             >
                               <Search className="w-3 h-3 text-emerald-400" />
-                              <span>Tìm gia sư</span>
+                              <span>Tìm anh/chị</span>
                             </button>
 
                             <button
@@ -784,8 +784,8 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                   <GraduationCap className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Đăng ký Hồ sơ Người dạy (Tutor)</h3>
-                  <p className="text-[11px] text-slate-400">Chọn trong 38 học phần đại học bạn có khả năng hướng dẫn kèm tại Huế</p>
+                  <h3 className="text-base font-bold text-white">Đăng ký Hồ sơ Người dạy (Dành cho Anh/Chị Khóa Trước)</h3>
+                  <p className="text-[11px] text-slate-400">Dành cho sinh viên khóa trên, cựu sinh viên giỏi chia sẻ đề thi, tài liệu và kèm 1-1 cho các em khóa dưới</p>
                 </div>
               </div>
               <button
@@ -835,7 +835,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                   type="text"
                   value={regHeadline}
                   onChange={(e) => setRegHeadline(e.target.value)}
-                  placeholder="VD: Thủ khoa Sư phạm Toán • Kèm ôn thi Toán ứng dụng, Kinh tế lượng & Thống kê"
+                  placeholder="VD: Sinh viên K44 • Kèm ôn thi Toán ứng dụng, Kinh tế lượng & Thống kê"
                   className="w-full px-3 py-2 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
                   required
                 />
@@ -1006,7 +1006,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                   onChange={(e) => setRequestSubject(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
-                  <optgroup label="Học phần người dạy chuyên trách">
+                  <optgroup label="Học phần anh/chị chuyên trách kèm">
                     {selectedTutorForRequest.subjects.map((sub, i) => (
                       <option key={`tut-${i}`} value={sub}>{sub}</option>
                     ))}
@@ -1067,7 +1067,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                   rows={3}
                   value={requestGoals}
                   onChange={(e) => setRequestGoals(e.target.value)}
-                  placeholder="VD: Cần gia sư hỗ trợ ôn tập đề cương, giải bài tập lớn và củng cố kiến thức trước kỳ thi cuối kỳ..."
+                  placeholder="VD: Em cần anh/chị hỗ trợ ôn tập đề cương, giải bài tập lớn và củng cố kiến thức trước kỳ thi cuối kỳ..."
                   className="w-full px-3 py-2 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500 resize-none"
                   required
                 />
@@ -1116,7 +1116,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-                <h3 className="text-base font-bold text-white">Đánh giá người dạy: {selectedTutorForReviews.full_name}</h3>
+                <h3 className="text-base font-bold text-white">Đánh giá anh/chị: {selectedTutorForReviews.full_name}</h3>
               </div>
               <button
                 onClick={() => setSelectedTutorForReviews(null)}
@@ -1139,7 +1139,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
             <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
               {dataService.getReviews().filter(r => r.tutor_id === selectedTutorForReviews.id).length === 0 ? (
                 <p className="text-xs text-slate-400 italic text-center py-4">
-                  Chưa có đánh giá nào cho người dạy này. Đánh giá chỉ được tạo sau khi học viên hoàn thành khóa học.
+                  Chưa có đánh giá nào cho anh/chị này. Đánh giá chỉ được tạo sau khi học viên hoàn thành buổi học kèm.
                 </p>
               ) : (
                 dataService.getReviews()

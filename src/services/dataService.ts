@@ -54,12 +54,12 @@ const initialProfiles: Profile[] = [
   {
     id: 'usr-tutor-01',
     email: 'tutor@edumate.vn',
-    full_name: 'Thầy Lê Hoàng Nam',
+    full_name: 'Anh Lê Hoàng Nam (K44)',
     phone: '0977889900',
     role: 'tutor',
     status: 'active',
     district: 'TP. Huế',
-    bio: 'Cựu sinh viên Thủ khoa Khoa Toán - ĐH Khoa học Huế. Hơn 4 năm kinh nghiệm dạy kèm Toán cao cấp và luyện thi THPT Quốc gia.',
+    bio: 'Cựu sinh viên Thủ khoa K44 ĐH Huế. Hơn 3 năm kinh nghiệm chia sẻ đề cương, giải bài tập lớn và kèm ôn thi học phần cho các em sinh viên khóa dưới.',
     avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
     created_at: '2026-09-10T08:00:00Z',
     updated_at: '2026-09-10T08:00:00Z'
@@ -67,12 +67,12 @@ const initialProfiles: Profile[] = [
   {
     id: 'usr-tutor-02',
     email: 'ngoc.ielts@edumate.vn',
-    full_name: 'Cô Trần Thị Bích Ngọc',
+    full_name: 'Chị Trần Thị Bích Ngọc (K45)',
     phone: '0944556677',
     role: 'tutor',
     status: 'active',
     district: 'Hương Thủy, Huế',
-    bio: 'Cử nhân Sư phạm Tiếng Anh - ĐH Ngoại ngữ Huế. Chứng chỉ IELTS 8.0 (Speaking 8.5). Phương pháp phản xạ tự nhiên.',
+    bio: 'Sinh viên năm cuối K45. IELTS 8.0, điểm A Tiếng Anh chuyên ngành. Phương pháp giải thích trực quan, chia sẻ đề thi các kỳ trước của khoa.',
     avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
     created_at: '2026-09-12T08:00:00Z',
     updated_at: '2026-09-12T08:00:00Z'
@@ -80,7 +80,7 @@ const initialProfiles: Profile[] = [
   {
     id: 'usr-manager-01',
     email: 'quanly@edumate.vn',
-    full_name: 'Trần Thị Mai (Quản trị viên EduMate Huế)',
+    full_name: 'Chị Trần Thị Mai (Quản trị viên EduMate Huế)',
     phone: '0987654321',
     role: 'manager',
     status: 'active',
@@ -95,49 +95,49 @@ const initialTutors: TutorProfile[] = [
   {
     id: 'tut-01',
     user_id: 'usr-tutor-01',
-    full_name: 'Thầy Lê Hoàng Nam',
-    headline: 'Thủ khoa Toán - ĐH Huế • Toán ứng dụng, Kinh tế lượng & Thống kê',
-    bio: 'Phương pháp trực quan, tập trung vào bản chất toán học thay vì học vẹt công thức. Đã hướng dẫn hơn 50 bạn sinh viên ĐH Huế đạt điểm A các học phần Toán và Kinh tế lượng.',
+    full_name: 'Anh Lê Hoàng Nam (K44)',
+    headline: 'Thủ khoa K44 • Điểm A+ Toán ứng dụng, Kinh tế lượng & Thống kê',
+    bio: 'Anh là cựu sinh viên K44 tốt nghiệp thủ khoa. Hơn 3 năm kinh nghiệm chia sẻ đề thi, giải bài tập lớn và kèm ôn thi cấp tốc cho các em sinh viên khóa dưới đạt điểm A học phần.',
     avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
     subjects: ['Toán ứng dụng trong kinh tế', 'Toán cao cấp', 'Kinh tế lượng', 'Thống kê trong Kinh tế và Kinh doanh', 'Toán rời rạc', 'Lý thuyết xác suất và thống kê toán'],
     hourly_rate: 120000,
     teaching_mode: 'both',
     district: 'TP. Huế (Khu vực ĐH Khoa học & ĐH Sư phạm)',
-    experience_years: 4,
+    experience_years: 3,
     verification_status: 'verified',
     rating_avg: 4.9,
     rating_count: 18,
     available_days: ['Tối thứ 2', 'Tối thứ 4', 'Chiều thứ 7', 'Chủ nhật'],
-    certifications: 'Bằng Cử nhân Xuất sắc ĐH Sư phạm Huế, Giải Nhì Olympic Toán sinh viên toàn quốc',
+    certifications: 'Cựu sinh viên Xuất sắc K44 ĐH Huế, Điểm A+ toàn bộ các học phần Toán & Kinh tế lượng',
     created_at: '2026-09-10T08:00:00Z',
     updated_at: '2026-10-01T08:00:00Z'
   },
   {
     id: 'tut-02',
     user_id: 'usr-tutor-02',
-    full_name: 'Cô Trần Thị Bích Ngọc',
-    headline: 'IELTS 8.0 • Tiếng Anh chuyên ngành Kinh tế & Quản trị học',
-    bio: 'Tốt nghiệp ĐH Ngoại ngữ Huế. Chuyên chỉnh phát âm IPA chuẩn Anh - Mỹ, xây dựng vốn từ vựng học thuật Kinh tế và phản xạ giao tiếp tự tin cho sinh viên chuẩn bị ra trường.',
+    full_name: 'Chị Trần Thị Bích Ngọc (K45)',
+    headline: 'Sinh viên năm 4 K45 • IELTS 8.0 • Điểm A Tiếng Anh chuyên ngành',
+    bio: 'Chị là sinh viên năm cuối K45. Nắm rất rõ cấu trúc đề thi và yêu cầu của thầy cô trong khoa, sẵn sàng hỗ trợ các em khóa dưới vượt qua nỗi sợ tiếng Anh chuyên ngành và ôn thi học phần đạt điểm cao.',
     avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
     subjects: ['Tiếng Anh chuyên ngành', 'Quản trị học', 'Kinh tế vi mô 1', 'Kinh tế vĩ mô 1'],
     hourly_rate: 150000,
     teaching_mode: 'both',
     district: 'Hương Thủy & TP. Huế',
-    experience_years: 3,
+    experience_years: 2,
     verification_status: 'verified',
     rating_avg: 5.0,
     rating_count: 24,
     available_days: ['Sáng thứ 3', 'Chiều thứ 5', 'Tối thứ 6', 'Chủ nhật'],
-    certifications: 'IELTS Certificate 8.0 (IDP cấp năm 2024), Chứng chỉ Giảng dạy TESOL Quốc tế',
+    certifications: 'IELTS 8.0, Điểm A Tiếng Anh chuyên ngành Kinh tế & Quản trị học',
     created_at: '2026-09-12T08:00:00Z',
     updated_at: '2026-10-05T08:00:00Z'
   },
   {
     id: 'tut-03',
     user_id: 'usr-tutor-03',
-    full_name: 'Anh Phan Minh Trí',
-    headline: 'Software Engineer • CSDL nâng cao, ERP, OOP & Cấu trúc dữ liệu',
-    bio: 'Kỹ sư phần mềm đang làm việc tại Huế. Nhận kèm 1-1 cho các bạn sinh viên CNTT/MIS mới bắt đầu, hướng dẫn làm đồ án môn học, xây dựng hệ thống thực tế với CSDL nâng cao, OOP và ERP.',
+    full_name: 'Anh Phan Minh Trí (K43)',
+    headline: 'Cựu sinh viên K43 MIS • Software Engineer • Kèm CSDL, ERP & OOP',
+    bio: 'Anh là cựu sinh viên K43 Hệ thống thông tin quản lý, hiện là Kỹ sư phần mềm tại Huế. Kèm 1-1 cho các em khóa dưới thực hành CSDL nâng cao, viết code OOP, cấu trúc dữ liệu và triển khai ERP.',
     avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
     subjects: ['Cơ sở dữ liệu nâng cao', 'Cấu trúc dữ liệu và Giải thuật', 'Lập trình hướng đối tượng', 'Hệ thống hoạch định nguồn lực doanh nghiệp (ERP)', 'Cơ sở lập trình', 'Khai phá dữ liệu'],
     hourly_rate: 160000,
@@ -148,16 +148,16 @@ const initialTutors: TutorProfile[] = [
     rating_avg: 4.8,
     rating_count: 12,
     available_days: ['Tối thứ 3', 'Tối thứ 5', 'Cả ngày Chủ nhật'],
-    certifications: 'Bằng Kỹ sư CNTT - ĐH Bách Khoa, AWS Certified Solutions Architect',
+    certifications: 'Cựu sinh viên Giỏi K43, AWS Certified Solutions Architect, Điểm A+ CSDL nâng cao & OOP',
     created_at: '2026-09-15T08:00:00Z',
     updated_at: '2026-10-08T08:00:00Z'
   },
   {
     id: 'tut-04',
     user_id: 'usr-tutor-04',
-    full_name: 'Hoàng Thị Diệu Thảo',
-    headline: 'Thủ khoa Kinh tế Vi mô & Kế toán • Quản trị tài chính',
-    bio: 'Sinh viên xuất sắc chuyên ngành Kinh tế. Hỗ trợ các bạn sinh viên củng cố kiến thức Nguyên lý kế toán, Kinh tế vi mô 1, Kinh tế vĩ mô 1 và giải bài tập lớn Quản trị tài chính.',
+    full_name: 'Chị Hoàng Thị Diệu Thảo (K46)',
+    headline: 'Sinh viên K46 • Thủ khoa Nguyên lý kế toán & Kinh tế vi mô 1',
+    bio: 'Chị là sinh viên năm 3 K46. Phương pháp lập sơ đồ hạch toán chữ T, định khoản kế toán và phân tích đồ thị vi mô giúp các em sinh viên năm 1, năm 2 nắm chắc kiến thức và tự tin đi thi.',
     avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300',
     subjects: ['Nguyên lý kế toán', 'Kinh tế vi mô 1', 'Kinh tế vĩ mô 1', 'Quản trị tài chính', 'Tài chính - tiền tệ 1'],
     hourly_rate: 95000,
@@ -168,47 +168,47 @@ const initialTutors: TutorProfile[] = [
     rating_avg: 0,
     rating_count: 0,
     available_days: ['Chiều thứ 2', 'Chiều thứ 4', 'Sáng thứ 7'],
-    certifications: 'Bảng điểm xuất sắc ĐH Kinh tế Huế',
+    certifications: 'Điểm A+ Nguyên lý kế toán, Kinh tế vi mô 1, Học bổng Khuyến khích học tập ĐH Huế',
     created_at: '2026-10-10T08:00:00Z',
     updated_at: '2026-10-10T08:00:00Z'
   },
   {
     id: 'tut-05',
     user_id: 'usr-tutor-05',
-    full_name: 'Thầy Nguyễn Đăng Khoa',
-    headline: 'Thạc sĩ Hệ thống Thông tin • MIS, Lập trình ứng dụng & TMĐT',
-    bio: 'Hơn 5 năm giảng dạy các học phần Hệ thống thông tin quản lý, Khai phá dữ liệu và Thương mại điện tử. Hướng dẫn sinh viên làm đồ án tốt nghiệp và phân tích hệ thống thực tế.',
+    full_name: 'Anh Nguyễn Đăng Khoa (K44)',
+    headline: 'Cựu sinh viên K44 • Điểm A+ Hệ thống thông tin quản lý, Khai phá dữ liệu & TMĐT',
+    bio: 'Anh là cựu sinh viên K44 chuyên ngành MIS. Từng hướng dẫn nhiều nhóm sinh viên khóa dưới làm đồ án môn học, phân tích yêu cầu HTTT quản lý và xử lý dữ liệu đạt điểm 9-10.',
     avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
     subjects: ['Hệ thống thông tin quản lý', 'Khai phá dữ liệu', 'Phát triển hệ thống thông tin quản lý', 'Lập trình ứng dụng trong quản lý', 'Kỹ thuật thương mại điện tử', 'Tin học ứng dụng nâng cao'],
     hourly_rate: 130000,
     teaching_mode: 'both',
     district: 'TP. Huế',
-    experience_years: 5,
+    experience_years: 3,
     verification_status: 'verified',
     rating_avg: 4.9,
     rating_count: 16,
     available_days: ['Tối thứ 3', 'Tối thứ 5', 'Chiều thứ 7'],
-    certifications: 'Thạc sĩ Khoa học Máy tính & Hệ thống Thông tin Quản lý',
+    certifications: 'Điểm A+ HTTT quản lý, Khai phá dữ liệu, Giải thưởng Nghiên cứu khoa học sinh viên',
     created_at: '2026-09-20T08:00:00Z',
     updated_at: '2026-10-01T08:00:00Z'
   },
   {
     id: 'tut-06',
     user_id: 'usr-tutor-06',
-    full_name: 'Cô Lê Thu Hằng',
-    headline: 'Giảng viên Triết học & Lý luận Chính trị • Pháp luật đại cương',
-    bio: 'Phương pháp phân tích sơ đồ tư duy, liên hệ thực tiễn xã hội giúp sinh viên nắm vững bản chất các môn Lý luận chính trị và Pháp luật, đạt điểm cao các kỳ thi học phần.',
+    full_name: 'Chị Lê Thu Hằng (K45)',
+    headline: 'Sinh viên K45 • Thủ khoa Triết học Mác - Lênin & Các môn Lý luận chính trị',
+    bio: 'Chị là sinh viên năm 4 K45. Bí quyết liên hệ thực tế và vẽ sơ đồ tư duy giúp các em khóa dưới hiểu sâu bản chất các môn Lý luận chính trị, không cần học vẹt mà vẫn đạt điểm A/A+ các kỳ thi.',
     avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300',
     subjects: ['Triết học Mác - Lênin', 'Kinh tế chính trị Mác - Lênin', 'Tư tưởng Hồ Chí Minh', 'Lịch sử Đảng Cộng sản Việt Nam', 'Chủ nghĩa xã hội khoa học', 'Pháp luật đại cương'],
     hourly_rate: 110000,
     teaching_mode: 'both',
     district: 'TP. Huế',
-    experience_years: 4,
+    experience_years: 2,
     verification_status: 'verified',
     rating_avg: 5.0,
     rating_count: 21,
     available_days: ['Sáng thứ 2', 'Tối thứ 4', 'Chiều Chủ nhật'],
-    certifications: 'Cử nhân Sư phạm Triết học & Luật',
+    certifications: 'Điểm A+ Triết học Mác - Lênin, Tư tưởng HCM, Lịch sử Đảng, Pháp luật đại cương',
     created_at: '2026-09-22T08:00:00Z',
     updated_at: '2026-10-02T08:00:00Z'
   }
@@ -223,11 +223,11 @@ const initialLearningRequests: LearningRequest[] = [
     student_phone: '0912345678',
     student_email: 'sinhvien@edumate.vn',
     tutor_id: 'tut-01',
-    tutor_name: 'Thầy Lê Hoàng Nam',
-    subject_name: 'Toán cao cấp',
+    tutor_name: 'Anh Lê Hoàng Nam (K44)',
+    subject_name: 'Toán ứng dụng trong kinh tế',
     teaching_mode: 'offline',
     preferred_schedule: 'Tối thứ 4 (19:00 - 21:00)',
-    learning_goals: 'Cần gia sư hỗ trợ phần Tích phân suy rộng và Chuỗi Fourier để thi qua môn cuối kỳ ĐH.',
+    learning_goals: 'Cần anh Nam hỗ trợ ôn đề cương Tích phân suy rộng và Chuỗi Fourier để thi qua môn cuối kỳ ĐH.',
     address: 'Khu ký túc xá ĐH Huế, 42 Lê Hồng Phong, TP. Huế',
     notes: 'Em muốn học kèm trực tiếp 1-1 khoảng 4 buổi.',
     status: 'pending', // Chờ xác nhận
@@ -243,12 +243,12 @@ const initialLearningRequests: LearningRequest[] = [
     student_phone: '0933221100',
     student_email: 'sinhvien2@edumate.vn',
     tutor_id: 'tut-02',
-    tutor_name: 'Cô Trần Thị Bích Ngọc',
-    subject_name: 'Tiếng Anh giao tiếp',
+    tutor_name: 'Chị Trần Thị Bích Ngọc (K45)',
+    subject_name: 'Tiếng Anh chuyên ngành',
     teaching_mode: 'both',
     preferred_schedule: 'Tối thứ 6 (18:30 - 20:30)',
     learning_goals: 'Luyện phản xạ giao tiếp phỏng vấn xin việc cho sinh viên chuẩn bị ra trường.',
-    notes: 'Cô đã chấp nhận yêu cầu và hẹn bắt đầu từ tuần này.',
+    notes: 'Chị Ngọc đã chấp nhận yêu cầu và hẹn bắt đầu từ tuần này.',
     status: 'accepted', // Đã chấp nhận
     reviewed: false,
     created_at: '2026-10-11T14:30:00Z',
@@ -262,11 +262,11 @@ const initialLearningRequests: LearningRequest[] = [
     student_phone: '0912345678',
     student_email: 'sinhvien@edumate.vn',
     tutor_id: 'tut-03',
-    tutor_name: 'Anh Phan Minh Trí',
-    subject_name: 'Lập trình Web (HTML/CSS/JS/React)',
+    tutor_name: 'Anh Phan Minh Trí (K43)',
+    subject_name: 'Cơ sở dữ liệu nâng cao',
     teaching_mode: 'online',
     preferred_schedule: 'Chủ nhật (14:00 - 16:00)',
-    learning_goals: 'Học React hooks và làm đồ án Web cho trường.',
+    learning_goals: 'Học tối ưu hóa truy vấn SQL và làm đồ án Cơ sở dữ liệu nâng cao cho trường.',
     notes: 'Đã hoàn thành khóa học 6 buổi rất hiệu quả.',
     status: 'completed', // Đã hoàn thành -> cho phép đánh giá
     completed_at: '2026-10-10T16:00:00Z',
@@ -284,7 +284,7 @@ const initialReviews: Review[] = [
     student_name: 'Nguyễn Văn An',
     tutor_id: 'tut-03',
     rating: 5,
-    comment: 'Anh Trí dạy cực kỳ nhiệt tình, hướng dẫn từng bước Debug lỗi React và chia sẻ kinh nghiệm đi làm thực tế rất bổ ích cho sinh viên. Em đã qua môn đồ án xuất sắc!',
+    comment: 'Anh Trí là anh khóa trên dạy cực kỳ nhiệt tình, hướng dẫn từng bước Debug lỗi, chia sẻ đề thi các năm và truyền kinh nghiệm làm đồ án rất bổ ích cho các em khóa dưới. Em đã qua môn đồ án xuất sắc!',
     created_at: '2026-10-10T16:30:00Z'
   },
   {
@@ -294,7 +294,7 @@ const initialReviews: Review[] = [
     student_name: 'Lê Thị Bình',
     tutor_id: 'tut-02',
     rating: 5,
-    comment: 'Cô Ngọc dạy phát âm rất chuẩn và chỉ dẫn tận tình. Sau 1 tháng em tự tin nói tiếng Anh hơn hẳn. Rất khuyến khích các bạn ở Huế đăng ký học kèm!',
+    comment: 'Chị Ngọc kèm rất có tâm, chia sẻ cả bộ đề cương ôn thi học phần của khoa và giải thích dễ hiểu. Sau 1 tháng em tự tin hẳn lên. Cảm ơn chị nhiều ạ!',
     created_at: '2026-10-05T19:00:00Z'
   }
 ];
@@ -389,7 +389,13 @@ class DataStore {
   // Profiles
   // ----------------------------------------------------------------------------
   getProfiles(): Profile[] {
-    return this.get('profiles', initialProfiles);
+    const cached = this.get<Profile[]>('profiles', initialProfiles);
+    const hasLegacy = cached?.some(p => p.full_name.includes('Thầy') || p.full_name.includes('Cô'));
+    if (!cached || hasLegacy) {
+      this.set('profiles', initialProfiles);
+      return initialProfiles;
+    }
+    return cached;
   }
 
   getProfileById(id: string): Profile | null {
@@ -450,12 +456,13 @@ class DataStore {
   }
 
   // ----------------------------------------------------------------------------
-  // Tutor Profiles (Người dạy)
+  // Tutor Profiles (Người dạy - Anh/Chị Khóa Trước)
   // ----------------------------------------------------------------------------
   getTutors(filterVerifiedOnly = false): TutorProfile[] {
     const cached = this.get<TutorProfile[]>('tutors', initialTutors);
     let tutors = cached;
-    if (!cached || cached.length < initialTutors.length) {
+    const hasLegacyName = cached?.some(t => t.full_name.includes('Thầy') || t.full_name.includes('Cô'));
+    if (!cached || cached.length < initialTutors.length || hasLegacyName) {
       tutors = initialTutors;
       this.set('tutors', initialTutors);
     }

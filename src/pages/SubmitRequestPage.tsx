@@ -44,9 +44,9 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
   const validate = () => {
     const errs: { [key: string]: string } = {};
     if (!goals.trim()) {
-      errs.goals = 'Vui lòng nêu rõ mục tiêu hoặc nội dung kiến thức bạn cần người dạy hỗ trợ.';
+      errs.goals = 'Vui lòng nêu rõ mục tiêu hoặc nội dung kiến thức bạn cần anh/chị khóa trước hỗ trợ.';
     } else if (goals.trim().length < 10) {
-      errs.goals = 'Nội dung mục tiêu quá ngắn (tối thiểu 10 ký tự để người dạy nắm bắt).';
+      errs.goals = 'Nội dung mục tiêu quá ngắn (tối thiểu 10 ký tự để anh/chị nắm bắt).';
     }
 
     if (!schedule.trim()) {
@@ -71,7 +71,7 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
     }
 
     if (!selectedTutor) {
-      showToast('error', 'Chưa chọn người dạy', 'Vui lòng chọn người dạy trong danh sách');
+      showToast('error', 'Chưa chọn người dạy', 'Vui lòng chọn anh/chị khóa trước trong danh sách');
       return;
     }
 
@@ -116,7 +116,7 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
           <span>Biểu Mẫu Gửi Yêu Cầu Học Tập</span>
         </h1>
         <p className="text-xs text-slate-400">
-          Chọn người dạy phù hợp tại Huế, cung cấp nhu cầu học tập và thời gian mong muốn để bắt đầu buổi học
+          Chọn anh/chị khóa trước phù hợp tại Huế, cung cấp nhu cầu học tập và thời gian mong muốn để bắt đầu buổi học kèm 1-1
         </p>
       </div>
 
@@ -163,7 +163,7 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
           {/* Select Tutor Dropdown */}
           <div>
             <label className="block text-slate-200 font-semibold mb-1">
-              Người dạy tiếp nhận yêu cầu *
+              Anh/Chị khóa trước tiếp nhận yêu cầu *
             </label>
             <select
               value={selectedTutorId}
@@ -256,13 +256,13 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
           {/* Goals / Needs */}
           <div>
             <label className="block text-slate-200 font-semibold mb-1">
-              Mục tiêu học tập & Nội dung cần hỗ trợ (Tối thiểu 10 ký tự) *
+              Mục tiêu học tập & Nội dung cần anh/chị hỗ trợ (Tối thiểu 10 ký tự) *
             </label>
             <textarea
               rows={3}
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
-              placeholder="Nêu rõ tình trạng học tập hiện tại, phần kiến thức bị hổng, kỳ thi hoặc bài tập lớn đang cần kèm..."
+              placeholder="Nêu rõ tình trạng học tập hiện tại, phần kiến thức bị hổng, kỳ thi hoặc bài tập lớn đang cần anh/chị kèm..."
               className="w-full px-3 py-2.5 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
             />
             {errors.goals && <p className="text-rose-400 text-[11px] mt-1">{errors.goals}</p>}
@@ -271,7 +271,7 @@ export const SubmitRequestPage: React.FC<SubmitRequestPageProps> = ({
           {/* Notes */}
           <div>
             <label className="block text-slate-200 font-semibold mb-1">
-              Ghi chú thêm cho người dạy
+              Ghi chú thêm cho anh/chị khóa trước
             </label>
             <input
               type="text"

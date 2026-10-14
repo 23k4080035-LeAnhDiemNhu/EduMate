@@ -96,9 +96,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       setTutors(dataService.getTutors(false));
       setAuditLogs(dataService.getAuditLogs());
       if (status === 'verified') {
-        showToast('success', 'Đã phê duyệt hồ sơ người dạy!', 'Hồ sơ đã được cấp nhãn "Đã xác minh" và hiển thị công khai.');
+        showToast('success', 'Đã phê duyệt hồ sơ anh/chị khóa trước!', 'Hồ sơ đã được cấp nhãn "Đã xác minh" và hiển thị công khai.');
       } else {
-        showToast('info', 'Đã từ chối hồ sơ người dạy', 'Hồ sơ đã được lưu vết và chuyển trạng thái từ chối.');
+        showToast('info', 'Đã từ chối hồ sơ anh/chị khóa trước', 'Hồ sơ đã được lưu vết và chuyển trạng thái từ chối.');
       }
     } catch (err: any) {
       showToast('error', 'Lỗi kiểm duyệt', err.message);
@@ -296,7 +296,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
               : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
-          <span>Duyệt Người Dạy ({tutors.length})</span>
+          <span>Duyệt Anh/Chị Khóa Trước ({tutors.length})</span>
           {pendingTutorsCount > 0 && (
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-slate-950 font-black">
               {pendingTutorsCount}
@@ -390,7 +390,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-900/90 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
                   <tr>
-                    <th className="px-5 py-3.5">Người Dạy</th>
+                    <th className="px-5 py-3.5">Anh/Chị Khóa Trước</th>
                     <th className="px-5 py-3.5">Môn Hướng Dẫn</th>
                     <th className="px-5 py-3.5">Khu Vực & Hình Thức</th>
                     <th className="px-5 py-3.5">Mức Phí</th>

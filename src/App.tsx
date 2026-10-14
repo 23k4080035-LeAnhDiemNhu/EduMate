@@ -100,7 +100,7 @@ export function App() {
       if (currentPage === 'admin' || currentPage === 'submit-request') {
         setCurrentPage('my-requests');
       }
-      showToast('info', 'Đã chuyển sang vai trò Người dạy (Tutor)', `Tài khoản: ${matchingProfile.full_name}`);
+      showToast('info', 'Đã chuyển sang vai trò Người dạy (Khóa trước)', `Tài khoản: ${matchingProfile.full_name}`);
     } else {
       if (currentPage === 'admin') {
         setCurrentPage('home');

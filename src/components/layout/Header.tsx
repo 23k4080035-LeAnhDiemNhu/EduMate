@@ -126,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
                     ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
-                title="Đổi vai trò sang Người dạy (Gia sư/Giảng viên)"
+                title="Đổi vai trò sang Người dạy (Anh/Chị khóa trước)"
               >
                 <GraduationCap className="w-3 h-3" />
                 <span className="hidden sm:inline">Người dạy</span>

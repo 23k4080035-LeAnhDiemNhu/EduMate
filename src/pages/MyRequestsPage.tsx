@@ -293,13 +293,13 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
                 {/* Counterpart info */}
                 <div className="space-y-1">
                   <div className="text-slate-500 text-[10px] uppercase font-bold">
-                    {currentUser.role === 'tutor' ? 'Học viên gửi yêu cầu:' : 'Người dạy được chọn:'}
+                    {currentUser.role === 'tutor' ? 'Học viên (Khóa dưới) gửi yêu cầu:' : 'Anh/Chị khóa trước được chọn:'}
                   </div>
                   <div className="text-sm font-bold text-white">
                     {currentUser.role === 'tutor' ? req.student_name : req.tutor_name}
                   </div>
                   <div className="text-slate-400 text-[11px]">
-                    {currentUser.role === 'tutor' ? (req.student_phone || req.student_email) : 'Gia sư / Giảng viên tại Huế'}
+                    {currentUser.role === 'tutor' ? (req.student_phone || req.student_email) : 'Anh/Chị khóa trước tại Huế'}
                   </div>
                 </div>
 
