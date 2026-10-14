@@ -88,6 +88,15 @@ export interface Review {
   created_at: string;
 }
 
+export interface CourseSubject {
+  stt: number;
+  code: string;
+  name: string;
+  category: string;
+  credits: number;
+  description: string;
+}
+
 export interface SubjectCategory {
   id: string;
   code: string;

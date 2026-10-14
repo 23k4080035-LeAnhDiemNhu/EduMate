@@ -334,7 +334,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
               : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           }`}
         >
-          Khóa Học ({academicItems.length})
+          38 Học Phần Đại Học ({academicItems.length})
         </button>
 
         <button

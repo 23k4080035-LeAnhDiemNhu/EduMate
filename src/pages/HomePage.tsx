@@ -147,7 +147,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {categories.map((cat) => (
             <div
               key={cat.id}
@@ -170,6 +170,34 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Banner Quick Link to 38 University Subjects Table */}
+        <div 
+          onClick={() => onNavigate('academic')}
+          className="p-5 rounded-2xl bg-gradient-to-r from-blue-900/40 via-emerald-950/40 to-teal-900/40 border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-4 cursor-pointer hover:border-emerald-400/60 transition-all group"
+        >
+          <div className="flex items-center space-x-3.5">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <BookOpen className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-bold text-white">Tra cứu trọn bộ 38 Học phần Đại học tại Huế</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Chuẩn hóa tín chỉ
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Nguyên lý kế toán (ECO2013), Kinh tế vi mô (KTPT2023), CSDL nâng cao (HTTT4233), ERP (ECO2407), Kinh tế lượng (ECO2411)...
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-400 group-hover:text-emerald-300 shrink-0">
+            <span>Mở bảng tra cứu & tìm người dạy</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
         </div>
       </section>
 

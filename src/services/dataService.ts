@@ -15,8 +15,10 @@ import type {
   AuditLog,
   RequestStatus,
   PaymentStatus,
-  OrderStatus
+  OrderStatus,
+  CourseSubject
 } from '../types';
+import { EDUMATE_SUBJECTS, SUBJECT_CATEGORIES } from '../data/subjects';
 
 // ==============================================================================
 // SEED DATA: EDUMATE HUẾ - NỀN TẢNG KẾT NỐI NGƯỜI HỌC VÀ NGƯỜI DẠY
@@ -94,10 +96,10 @@ const initialTutors: TutorProfile[] = [
     id: 'tut-01',
     user_id: 'usr-tutor-01',
     full_name: 'Thầy Lê Hoàng Nam',
-    headline: 'Thủ khoa Sư phạm Toán • Chuyên gia Toán cao cấp & Giải tích',
-    bio: 'Phương pháp trực quan, tập trung vào bản chất toán học thay vì học vẹt công thức. Đã hướng dẫn hơn 50 bạn sinh viên ĐH Huế đạt điểm A học phần Toán cao cấp.',
+    headline: 'Thủ khoa Toán - ĐH Huế • Toán ứng dụng, Kinh tế lượng & Thống kê',
+    bio: 'Phương pháp trực quan, tập trung vào bản chất toán học thay vì học vẹt công thức. Đã hướng dẫn hơn 50 bạn sinh viên ĐH Huế đạt điểm A các học phần Toán và Kinh tế lượng.',
     avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
-    subjects: ['Toán cao cấp', 'Giải tích đại số', 'Xác suất thống kê'],
+    subjects: ['Toán ứng dụng trong kinh tế', 'Toán cao cấp', 'Kinh tế lượng', 'Thống kê trong Kinh tế và Kinh doanh', 'Toán rời rạc', 'Lý thuyết xác suất và thống kê toán'],
     hourly_rate: 120000,
     teaching_mode: 'both',
     district: 'TP. Huế (Khu vực ĐH Khoa học & ĐH Sư phạm)',
@@ -114,10 +116,10 @@ const initialTutors: TutorProfile[] = [
     id: 'tut-02',
     user_id: 'usr-tutor-02',
     full_name: 'Cô Trần Thị Bích Ngọc',
-    headline: 'IELTS 8.0 • Luyện thi Tiếng Anh giao tiếp & Speaking cấp tốc',
-    bio: 'Tốt nghiệp ĐH Ngoại ngữ Huế. Chuyên chỉnh phát âm IPA chuẩn Anh - Mỹ, xây dựng vốn từ vựng học thuật và phản xạ giao tiếp tự tin cho sinh viên chuẩn bị ra trường.',
+    headline: 'IELTS 8.0 • Tiếng Anh chuyên ngành Kinh tế & Quản trị học',
+    bio: 'Tốt nghiệp ĐH Ngoại ngữ Huế. Chuyên chỉnh phát âm IPA chuẩn Anh - Mỹ, xây dựng vốn từ vựng học thuật Kinh tế và phản xạ giao tiếp tự tin cho sinh viên chuẩn bị ra trường.',
     avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
-    subjects: ['Tiếng Anh giao tiếp', 'IELTS Speaking & Writing', 'Tiếng Anh chuyên ngành'],
+    subjects: ['Tiếng Anh chuyên ngành', 'Quản trị học', 'Kinh tế vi mô 1', 'Kinh tế vĩ mô 1'],
     hourly_rate: 150000,
     teaching_mode: 'both',
     district: 'Hương Thủy & TP. Huế',
@@ -134,10 +136,10 @@ const initialTutors: TutorProfile[] = [
     id: 'tut-03',
     user_id: 'usr-tutor-03',
     full_name: 'Anh Phan Minh Trí',
-    headline: 'Software Engineer • Dạy kèm Lập trình Web Frontend & Python',
-    bio: 'Kỹ sư phần mềm đang làm việc tại Huế. Nhận kèm 1-1 cho các bạn sinh viên CNTT mới bắt đầu, hướng dẫn làm đồ án môn học, xây dựng website thực tế với React, TypeScript, Git.',
+    headline: 'Software Engineer • CSDL nâng cao, ERP, OOP & Cấu trúc dữ liệu',
+    bio: 'Kỹ sư phần mềm đang làm việc tại Huế. Nhận kèm 1-1 cho các bạn sinh viên CNTT/MIS mới bắt đầu, hướng dẫn làm đồ án môn học, xây dựng hệ thống thực tế với CSDL nâng cao, OOP và ERP.',
     avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
-    subjects: ['Lập trình Web (HTML/CSS/JS/React)', 'Python cơ bản', 'Cấu trúc dữ liệu & Giải thuật'],
+    subjects: ['Cơ sở dữ liệu nâng cao', 'Cấu trúc dữ liệu và Giải thuật', 'Lập trình hướng đối tượng', 'Hệ thống hoạch định nguồn lực doanh nghiệp (ERP)', 'Cơ sở lập trình', 'Khai phá dữ liệu'],
     hourly_rate: 160000,
     teaching_mode: 'online',
     district: 'Hương Trà & TP. Huế (Dạy trực tuyến toàn quốc)',
@@ -154,10 +156,10 @@ const initialTutors: TutorProfile[] = [
     id: 'tut-04',
     user_id: 'usr-tutor-04',
     full_name: 'Hoàng Thị Diệu Thảo',
-    headline: 'Sinh viên năm cuối ĐH Y Dược Huế • Dạy kèm Vật lý & Hóa học đại cương',
-    bio: 'Học sinh giỏi cấp Tỉnh môn Hóa học. Hỗ trợ các em học sinh cấp 3 ôn thi và sinh viên năm nhất khối ngành Sức khỏe củng cố kiến thức Hóa đại cương, Hóa hữu cơ.',
+    headline: 'Thủ khoa Kinh tế Vi mô & Kế toán • Quản trị tài chính',
+    bio: 'Sinh viên xuất sắc chuyên ngành Kinh tế. Hỗ trợ các bạn sinh viên củng cố kiến thức Nguyên lý kế toán, Kinh tế vi mô 1, Kinh tế vĩ mô 1 và giải bài tập lớn Quản trị tài chính.',
     avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300',
-    subjects: ['Hóa học đại cương', 'Vật lý đại cương', 'Hóa sinh cơ sở'],
+    subjects: ['Nguyên lý kế toán', 'Kinh tế vi mô 1', 'Kinh tế vĩ mô 1', 'Quản trị tài chính', 'Tài chính - tiền tệ 1'],
     hourly_rate: 95000,
     teaching_mode: 'offline',
     district: 'Phú Vang & TP. Huế',
@@ -166,9 +168,49 @@ const initialTutors: TutorProfile[] = [
     rating_avg: 0,
     rating_count: 0,
     available_days: ['Chiều thứ 2', 'Chiều thứ 4', 'Sáng thứ 7'],
-    certifications: 'Bảng điểm xuất sắc năm 1, 2 ĐH Y Dược Huế',
+    certifications: 'Bảng điểm xuất sắc ĐH Kinh tế Huế',
     created_at: '2026-10-10T08:00:00Z',
     updated_at: '2026-10-10T08:00:00Z'
+  },
+  {
+    id: 'tut-05',
+    user_id: 'usr-tutor-05',
+    full_name: 'Thầy Nguyễn Đăng Khoa',
+    headline: 'Thạc sĩ Hệ thống Thông tin • MIS, Lập trình ứng dụng & TMĐT',
+    bio: 'Hơn 5 năm giảng dạy các học phần Hệ thống thông tin quản lý, Khai phá dữ liệu và Thương mại điện tử. Hướng dẫn sinh viên làm đồ án tốt nghiệp và phân tích hệ thống thực tế.',
+    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+    subjects: ['Hệ thống thông tin quản lý', 'Khai phá dữ liệu', 'Phát triển hệ thống thông tin quản lý', 'Lập trình ứng dụng trong quản lý', 'Kỹ thuật thương mại điện tử', 'Tin học ứng dụng nâng cao'],
+    hourly_rate: 130000,
+    teaching_mode: 'both',
+    district: 'TP. Huế',
+    experience_years: 5,
+    verification_status: 'verified',
+    rating_avg: 4.9,
+    rating_count: 16,
+    available_days: ['Tối thứ 3', 'Tối thứ 5', 'Chiều thứ 7'],
+    certifications: 'Thạc sĩ Khoa học Máy tính & Hệ thống Thông tin Quản lý',
+    created_at: '2026-09-20T08:00:00Z',
+    updated_at: '2026-10-01T08:00:00Z'
+  },
+  {
+    id: 'tut-06',
+    user_id: 'usr-tutor-06',
+    full_name: 'Cô Lê Thu Hằng',
+    headline: 'Giảng viên Triết học & Lý luận Chính trị • Pháp luật đại cương',
+    bio: 'Phương pháp phân tích sơ đồ tư duy, liên hệ thực tiễn xã hội giúp sinh viên nắm vững bản chất các môn Lý luận chính trị và Pháp luật, đạt điểm cao các kỳ thi học phần.',
+    avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300',
+    subjects: ['Triết học Mác - Lênin', 'Kinh tế chính trị Mác - Lênin', 'Tư tưởng Hồ Chí Minh', 'Lịch sử Đảng Cộng sản Việt Nam', 'Chủ nghĩa xã hội khoa học', 'Pháp luật đại cương'],
+    hourly_rate: 110000,
+    teaching_mode: 'both',
+    district: 'TP. Huế',
+    experience_years: 4,
+    verification_status: 'verified',
+    rating_avg: 5.0,
+    rating_count: 21,
+    available_days: ['Sáng thứ 2', 'Tối thứ 4', 'Chiều Chủ nhật'],
+    certifications: 'Cử nhân Sư phạm Triết học & Luật',
+    created_at: '2026-09-22T08:00:00Z',
+    updated_at: '2026-10-02T08:00:00Z'
   }
 ];
 
@@ -257,40 +299,7 @@ const initialReviews: Review[] = [
   }
 ];
 
-const initialCategories: SubjectCategory[] = [
-  {
-    id: 'cat-01',
-    code: 'MATH',
-    name: 'Toán & Khoa học Tự nhiên',
-    icon: 'Calculator',
-    description: 'Toán cao cấp, Giải tích, Xác suất thống kê, Vật lý đại cương, Hóa học',
-    tutor_count: 8
-  },
-  {
-    id: 'cat-02',
-    code: 'LANG',
-    name: 'Ngoại ngữ & Luyện thi Chứng chỉ',
-    icon: 'Languages',
-    description: 'IELTS, TOEIC, Tiếng Anh giao tiếp sinh viên, Tiếng Nhật N5-N3, Tiếng Hàn',
-    tutor_count: 14
-  },
-  {
-    id: 'cat-03',
-    code: 'TECH',
-    name: 'Công nghệ Thông tin & Lập trình',
-    icon: 'Code2',
-    description: 'Lập trình Web (React/Node), Python, Cơ sở dữ liệu SQL, Tin học đại cương',
-    tutor_count: 10
-  },
-  {
-    id: 'cat-04',
-    code: 'SKILLS',
-    name: 'Kỹ năng mềm & Tin học Ứng dụng',
-    icon: 'GraduationCap',
-    description: 'Thuyết trình, Viết CV, Excel văn phòng, Thiết kế đồ họa Canva/Photoshop',
-    tutor_count: 6
-  }
-];
+const initialCategories: SubjectCategory[] = SUBJECT_CATEGORIES;
 
 // ==============================================================================
 // LEGACY COMPATIBILITY INITIAL DATA
@@ -332,7 +341,23 @@ const initialRequests: ServiceRequest[] = [
   }
 ];
 
-const initialAcademicItems: AcademicItem[] = [];
+const initialAcademicItems: AcademicItem[] = EDUMATE_SUBJECTS.map((s) => ({
+  id: `acad-${s.code.toLowerCase()}`,
+  code: s.code,
+  title: s.name,
+  description: s.description,
+  category: s.category,
+  standard_fee: 120000,
+  status: 'published' as const,
+  metadata: {
+    stt: s.stt,
+    credits: s.credits,
+    university: 'Đại học Huế',
+  },
+  created_by: 'usr-manager-01',
+  created_at: '2026-10-01T08:00:00Z',
+  updated_at: '2026-10-01T08:00:00Z'
+}));
 const initialEnrollments: Enrollment[] = [];
 const initialOrders: Order[] = [];
 const initialPayments: Payment[] = [];
@@ -428,7 +453,12 @@ class DataStore {
   // Tutor Profiles (Người dạy)
   // ----------------------------------------------------------------------------
   getTutors(filterVerifiedOnly = false): TutorProfile[] {
-    const tutors = this.get('tutors', initialTutors);
+    const cached = this.get<TutorProfile[]>('tutors', initialTutors);
+    let tutors = cached;
+    if (!cached || cached.length < initialTutors.length) {
+      tutors = initialTutors;
+      this.set('tutors', initialTutors);
+    }
     if (filterVerifiedOnly) {
       return tutors.filter(t => t.verification_status === 'verified');
     }
@@ -629,7 +659,20 @@ class DataStore {
   // Subject Categories
   // ----------------------------------------------------------------------------
   getSubjectCategories(): SubjectCategory[] {
-    return this.get('categories', initialCategories);
+    const cached = this.get<SubjectCategory[]>('categories', initialCategories);
+    if (!cached || cached.length < initialCategories.length) {
+      this.set('categories', initialCategories);
+      return initialCategories;
+    }
+    return cached;
+  }
+
+  getSubjects(): CourseSubject[] {
+    return EDUMATE_SUBJECTS;
+  }
+
+  getSubjectByCode(code: string): CourseSubject | undefined {
+    return EDUMATE_SUBJECTS.find(s => s.code.toLowerCase() === code.toLowerCase());
   }
 
   // ----------------------------------------------------------------------------
@@ -686,7 +729,14 @@ class DataStore {
     this.set('requests', requests);
     return requests[idx];
   }
-  getAcademicItems(): AcademicItem[] { return this.get('academic_items', initialAcademicItems); }
+  getAcademicItems(): AcademicItem[] {
+    const cached = this.get<AcademicItem[]>('academic_items', initialAcademicItems);
+    if (!cached || cached.length < initialAcademicItems.length) {
+      this.set('academic_items', initialAcademicItems);
+      return initialAcademicItems;
+    }
+    return cached;
+  }
   createAcademicItem(item: any): AcademicItem {
     const items = this.getAcademicItems();
     const newItem = { ...item, id: `acad-${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
