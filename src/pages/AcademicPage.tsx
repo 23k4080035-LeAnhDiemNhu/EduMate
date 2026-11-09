@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import type { Profile, TutorProfile, UserRole, TeachingMode } from '../types';
+import type { Profile, TutorProfile, UserRole, TeachingMode, CoursePackageType, ContentGroup } from '../types';
 import { dataService } from '../services/dataService';
-import { EDUMATE_SUBJECTS, SUBJECT_CATEGORIES } from '../data/subjects';
+import { EDUMATE_PACKAGES } from '../types';
+import { EDUMATE_SUBJECTS, SUBJECT_CATEGORIES, EDUMATE_CONTENT_GROUPS } from '../data/subjects';
 import { EmptyState } from '../components/common/EmptyState';
 import { 
   GraduationCap, 
@@ -22,7 +23,8 @@ import {
   Filter,
   Check,
   User,
-  Calendar
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 
 interface AcademicPageProps {
@@ -35,6 +37,7 @@ interface AcademicPageProps {
     district?: string;
     category?: string;
     tutorId?: string;
+    packageType?: CoursePackageType;
   };
 }
 
@@ -53,6 +56,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
   const [selectedDistrict, setSelectedDistrict] = useState(initialParams?.district || 'all');
   const [selectedMode, setSelectedMode] = useState<string>('all');
   const [maxPrice, setMaxPrice] = useState<number>(300000);
+  const [selectedContentPillar, setSelectedContentPillar] = useState<ContentGroup | 'all'>('all');
   const [selectedSubjectCategory, setSelectedSubjectCategory] = useState<string>(() => {
     if (initialParams?.category) {
       if (initialParams.category.includes('Toán')) return 'Toán';
@@ -79,11 +83,13 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
   const [regBio, setRegBio] = useState('');
   const [regSubjects, setRegSubjects] = useState<string[]>([]);
   const [regCustomSubject, setRegCustomSubject] = useState('');
-  const [regRate, setRegRate] = useState(120000);
+  const [regRate, setRegRate] = useState(30000);
   const [regMode, setRegMode] = useState<TeachingMode>('both');
   const [regDistrict, setRegDistrict] = useState('TP. Huế');
   const [regCertifications, setRegCertifications] = useState('');
   const [regAvailableDays] = useState('Tối thứ 2, Tối thứ 4, Chủ nhật');
+  const [regUniversity, setRegUniversity] = useState('Trường Đại học Kinh tế, Đại học Huế (HCE)');
+  const [regFaculty, setRegFaculty] = useState('Khoa Hệ thống thông tin kinh tế');
   const [regError, setRegError] = useState('');
 
   // Tutor Detail Modal State (Yêu cầu đặc tả: Trang chi tiết người dạy)
@@ -94,8 +100,11 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
     return null;
   });
 
-  // Quick Request Modal State (Quy trình D: Gửi yêu cầu học)
+  // Quick Request Modal State (Quy trình D: Gửi yêu cầu học theo gói)
   const [selectedTutorForRequest, setSelectedTutorForRequest] = useState<TutorProfile | null>(null);
+  const [requestPackageType, setRequestPackageType] = useState<CoursePackageType>(
+    (initialParams?.packageType as CoursePackageType) || 'trial'
+  );
   const [requestGoals, setRequestGoals] = useState('');
   const [requestSubject, setRequestSubject] = useState('');
   const [requestMode, setRequestMode] = useState<'online' | 'offline'>('offline');
@@ -108,7 +117,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
   const [selectedTutorForReviews, setSelectedTutorForReviews] = useState<TutorProfile | null>(null);
 
   // Auth-guarded handler to open request modal
-  const handleOpenRequest = (tutor: TutorProfile, prefilledSubject?: string) => {
+  const handleOpenRequest = (tutor: TutorProfile, prefilledSubject?: string, prefilledPackage?: CoursePackageType) => {
     if (!currentUser) {
       showToast('info', 'Yêu cầu đăng nhập', 'Vui lòng đăng nhập hoặc tạo tài khoản Người học trước khi gửi yêu cầu học tập.');
       onNavigate('auth');
@@ -116,6 +125,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
     }
     setRequestError('');
     setRequestSubject(prefilledSubject || tutor.subjects[0] || '');
+    setRequestPackageType(prefilledPackage || (initialParams?.packageType as CoursePackageType) || 'trial');
     setRequestMode(tutor.teaching_mode === 'online' ? 'online' : 'offline');
     setSelectedTutorForRequest(tutor);
   };
@@ -155,7 +165,28 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
       }
     }
 
-    return matchesSearch && matchesDistrict && matchesMode && matchesPrice && matchesCategory;
+    // Check 3 Core Content Pillars (Chương 1 & Chương 4 của PDF)
+    let matchesPillar = selectedContentPillar === 'all';
+    if (!matchesPillar) {
+      if (selectedContentPillar === 'practical_skills') {
+        matchesPillar = tutor.subjects.some(s => {
+          const lower = s.toLowerCase();
+          return lower.includes('excel') || lower.includes('canva') || lower.includes('powerpoint') || lower.includes('mos') || lower.includes('spss') || lower.includes('kỹ năng');
+        });
+      } else if (selectedContentPillar === 'general_education') {
+        matchesPillar = tutor.subjects.some(s => {
+          const lower = s.toLowerCase();
+          return lower.includes('triết') || lower.includes('chính trị') || lower.includes('tư tưởng') || lower.includes('pháp luật') || lower.includes('tiếng anh') || lower.includes('toán') || lower.includes('lịch sử đảng');
+        });
+      } else if (selectedContentPillar === 'major_specialization') {
+        matchesPillar = tutor.subjects.some(s => {
+          const lower = s.toLowerCase();
+          return lower.includes('kế toán') || lower.includes('kinh tế lượng') || lower.includes('cơ sở dữ liệu') || lower.includes('httt') || lower.includes('tài chính') || lower.includes('marketing') || lower.includes('quản trị');
+        });
+      }
+    }
+
+    return matchesSearch && matchesDistrict && matchesMode && matchesPrice && matchesCategory && matchesPillar;
   });
 
   // Filtered 38 Subjects logic
@@ -238,7 +269,10 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
         district: regDistrict.trim(),
         experience_years: 2,
         available_days: regAvailableDays.split(',').map(d => d.trim()),
-        certifications: regCertifications.trim() || undefined
+        certifications: regCertifications.trim() || undefined,
+        university: regUniversity.trim(),
+        faculty: regFaculty.trim(),
+        packages: ['trial', 'intensive', 'long_term']
       });
 
       setShowRegisterModal(false);
@@ -269,6 +303,7 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
     }
 
     try {
+      const selectedPkg = EDUMATE_PACKAGES.find(p => p.id === requestPackageType) || EDUMATE_PACKAGES[0];
       const newReq = dataService.createLearningRequest({
         student_id: currentUser.id,
         student_name: currentUser.full_name,
@@ -277,6 +312,12 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
         tutor_id: selectedTutorForRequest.id,
         tutor_name: selectedTutorForRequest.full_name,
         subject_name: requestSubject || selectedTutorForRequest.subjects[0] || 'Học phần đại học',
+        package_type: requestPackageType,
+        package_name: selectedPkg.name,
+        total_sessions: selectedPkg.sessions,
+        total_price: selectedPkg.price,
+        platform_fee: selectedPkg.platform_fee,
+        tutor_earnings: selectedPkg.tutor_earnings,
         teaching_mode: requestMode,
         preferred_schedule: requestSchedule || 'Tối trong tuần (19:00 - 21:00)',
         learning_goals: requestGoals.trim(),
@@ -287,7 +328,11 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
       setSelectedTutorForRequest(null);
       setRequestGoals('');
       setRequestNotes('');
-      showToast('success', 'Gửi yêu cầu học thành công!', `Mã yêu cầu: ${newReq.request_code}. Trạng thái: Chờ người dạy xác nhận.`);
+      showToast(
+        'success', 
+        'Gửi yêu cầu học theo gói thành công!', 
+        `Mã yêu cầu: ${newReq.request_code} (${selectedPkg.name} - ${selectedPkg.sessions} buổi). Đang chờ người dạy xác nhận lịch.`
+      );
       onNavigate('my-requests');
     } catch (err: any) {
       setRequestError(err.message || 'Không thể gửi yêu cầu');
@@ -442,6 +487,40 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
 
             </div>
 
+            {/* 3 Core Content Pillars (Chương 1 & Chương 4 của PDF Đồ Án) */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-800/60 text-[11px]">
+              <span className="text-slate-400 mr-1 flex items-center gap-1 font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>3 Trụ cột nội dung:</span>
+              </span>
+              <button
+                onClick={() => setSelectedContentPillar('all')}
+                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                  selectedContentPillar === 'all'
+                    ? 'bg-gradient-to-r from-blue-600 to-emerald-600 text-white font-bold shadow'
+                    : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                }`}
+              >
+                Tất cả trụ cột
+              </button>
+              {EDUMATE_CONTENT_GROUPS.map((pillar) => {
+                const isSelected = selectedContentPillar === pillar.id;
+                return (
+                  <button
+                    key={pillar.id}
+                    onClick={() => setSelectedContentPillar(pillar.id)}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-600 text-white font-bold shadow ring-1 ring-emerald-400/40'
+                        : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
+                    }`}
+                  >
+                    {pillar.name}
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Quick Category Badges */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[11px]">
               <span className="text-slate-500 mr-1 flex items-center gap-1">
@@ -563,6 +642,12 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                             {tutor.headline}
                           </p>
 
+                          <div className="text-[11px] text-blue-400 font-medium mt-0.5 flex items-center space-x-1">
+                            <span>{tutor.faculty || 'Khoa Hệ thống thông tin kinh tế'}</span>
+                            <span className="text-slate-600">•</span>
+                            <span>{tutor.university || 'ĐH Kinh tế Huế'}</span>
+                          </div>
+
                           <div className="flex items-center space-x-2 mt-1.5 text-xs">
                             <button
                               onClick={() => setSelectedTutorForReviews(tutor)}
@@ -584,12 +669,21 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
 
                       {/* Hourly Rate Callout */}
                       <div className="text-right shrink-0">
-                        <div className="text-[10px] text-slate-500">Mức phí đề xuất</div>
+                        <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Đơn giá chuẩn</div>
                         <div className="text-base font-black text-emerald-400">
-                          {tutor.hourly_rate.toLocaleString('vi-VN')} đ
+                          30.000 đ
                         </div>
-                        <div className="text-[10px] text-slate-400">/ buổi (2 giờ)</div>
+                        <div className="text-[10px] text-slate-400">/ buổi (theo gói)</div>
+                        <div className="text-[9px] text-emerald-400/90 font-medium mt-0.5">Tiết kiệm & Minh bạch</div>
                       </div>
+                    </div>
+
+                    {/* Standardized Course Packages Offered */}
+                    <div className="flex flex-wrap items-center gap-1.5 py-1.5 px-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-[10px]">
+                      <span className="text-slate-400 font-bold">Gói nhận kèm:</span>
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Học thử (3b - 90k)</span>
+                      <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">Cấp tốc (15b - 450k)</span>
+                      <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium">Dài hạn (12b - 360k)</span>
                     </div>
 
                     {/* Bio text */}
@@ -842,7 +936,10 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                     )}
                   </div>
                   <p className="text-xs text-slate-300 font-medium mt-0.5">{selectedTutorForDetail.headline}</p>
-                  <div className="flex items-center space-x-3 mt-1 text-xs text-slate-400">
+                  <div className="text-[11px] text-blue-400 font-medium mt-1">
+                    {selectedTutorForDetail.faculty || 'Khoa Hệ thống thông tin kinh tế'} • {selectedTutorForDetail.university || 'Trường ĐH Kinh tế, ĐH Huế'}
+                  </div>
+                  <div className="flex items-center space-x-3 mt-1.5 text-xs text-slate-400">
                     <span className="flex items-center space-x-1 text-amber-400 font-bold">
                       <Star className="w-3.5 h-3.5 fill-amber-400" />
                       <span>{selectedTutorForDetail.rating_avg > 0 ? selectedTutorForDetail.rating_avg.toFixed(1) : 'Chưa có'}</span>
@@ -870,9 +967,9 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
             {/* Teaching Fee & Mode Banner */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs">
               <div>
-                <div className="text-[10px] text-slate-500">Mức phí đề xuất</div>
+                <div className="text-[10px] text-slate-500">Đơn giá chuẩn EduMate</div>
                 <div className="text-sm font-black text-emerald-400">
-                  {selectedTutorForDetail.hourly_rate.toLocaleString('vi-VN')} đ <span className="text-[10px] text-slate-400 font-normal">/ buổi (2h)</span>
+                  30.000 đ <span className="text-[10px] text-slate-400 font-normal">/ buổi (theo gói)</span>
                 </div>
               </div>
               <div>
@@ -882,8 +979,26 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
                 </div>
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <div className="text-[10px] text-slate-500">Trạng thái nhận kèm</div>
-                <div className="text-xs font-semibold text-emerald-400">Sẵn sàng nhận học viên</div>
+                <div className="text-[10px] text-slate-500">Chính sách bảo vệ</div>
+                <div className="text-xs font-semibold text-emerald-400">Hoàn tiền 100% nếu từ chối</div>
+              </div>
+            </div>
+
+            {/* Packages Offered */}
+            <div className="p-3 rounded-2xl bg-slate-950/50 border border-slate-800/80 space-y-2 text-xs">
+              <div className="text-[11px] font-bold text-slate-300">3 Gói học chuẩn hóa áp dụng:</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {EDUMATE_PACKAGES.map(pkg => (
+                  <div key={pkg.id} className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+                    <div className="font-bold text-emerald-400">{pkg.name} ({pkg.sessions} buổi)</div>
+                    <div className="text-white font-extrabold text-[13px] mt-0.5">{pkg.price.toLocaleString('vi-VN')} đ</div>
+                    {currentUser?.role === 'tutor' ? (
+                      <div className="text-[10px] text-slate-400">Thu nhập bạn nhận: {pkg.tutor_earnings.toLocaleString('vi-VN')} đ</div>
+                    ) : (
+                      <div className="text-[10px] text-slate-400">Học phí người học đóng: {pkg.price.toLocaleString('vi-VN')} đ</div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1119,6 +1234,32 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Trường đại học tại Huế *</label>
+                  <input
+                    type="text"
+                    value={regUniversity}
+                    onChange={(e) => setRegUniversity(e.target.value)}
+                    placeholder="VD: Trường Đại học Kinh tế, Đại học Huế"
+                    className="w-full px-3 py-2 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Khoa / Khóa học *</label>
+                  <input
+                    type="text"
+                    value={regFaculty}
+                    onChange={(e) => setRegFaculty(e.target.value)}
+                    placeholder="VD: Khoa HTTT Kinh tế (K44)"
+                    className="w-full px-3 py-2 bg-slate-950 rounded-xl border border-slate-800 text-white focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
                   <label className="block text-slate-300 font-semibold mb-1">Hình thức dạy *</label>
                   <select
                     value={regMode}
@@ -1222,6 +1363,45 @@ export const AcademicPage: React.FC<AcademicPageProps> = ({
             )}
 
             <form onSubmit={handleSendQuickRequest} className="space-y-3.5 text-xs">
+              
+              {/* SELECT STANDARDIZED COURSE PACKAGE (CHƯƠNG 2.6.3 & CHƯƠNG 3.3 CỦA PDF) */}
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1.5">
+                  Lựa chọn Gói học chuẩn hóa theo Đồ án EduMate: *
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {EDUMATE_PACKAGES.map((pkg) => {
+                    const isSelected = requestPackageType === pkg.id;
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => setRequestPackageType(pkg.id)}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-emerald-950/40 border-emerald-500 shadow-md ring-1 ring-emerald-500/50'
+                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold ${isSelected ? 'text-emerald-400' : 'text-white'}`}>
+                            {pkg.name}
+                          </span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 font-semibold text-slate-300">
+                            {pkg.sessions} buổi
+                          </span>
+                        </div>
+                        <div className="text-sm font-extrabold text-white mt-1">
+                          {pkg.price.toLocaleString('vi-VN')} đ
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          30.000 đ/buổi • Trọn gói {pkg.sessions} buổi ({pkg.price.toLocaleString('vi-VN')} đ)
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Môn học / Học phần cần học *</label>
                 <select

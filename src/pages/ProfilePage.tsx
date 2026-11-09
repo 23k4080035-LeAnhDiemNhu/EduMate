@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import type { Profile, TeachingMode } from '../types';
+import type { Profile, TeachingMode, CoursePackageType } from '../types';
+import { EDUMATE_PACKAGES } from '../types';
 import { dataService } from '../services/dataService';
 import { EDUMATE_SUBJECTS } from '../data/subjects';
 import { isSupabaseConfigured, supabaseUpdateProfile } from '../lib/supabase';
@@ -69,11 +70,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   // Tutor Self-Management State
   const [tutorHeadline, setTutorHeadline] = useState(tutorRecord?.headline || '');
-  const [tutorHourlyRate, setTutorHourlyRate] = useState(tutorRecord?.hourly_rate || 120000);
+  const [tutorHourlyRate, setTutorHourlyRate] = useState(tutorRecord?.hourly_rate || 30000);
   const [tutorTeachingMode, setTutorTeachingMode] = useState<TeachingMode>(tutorRecord?.teaching_mode || 'both');
   const [tutorAvailableDays, setTutorAvailableDays] = useState<string[]>(tutorRecord?.available_days || ['Tối thứ 2', 'Tối thứ 4', 'Chủ nhật']);
   const [tutorSubjects, setTutorSubjects] = useState<string[]>(tutorRecord?.subjects || []);
   const [tutorCertifications, setTutorCertifications] = useState(tutorRecord?.certifications || '');
+  const [tutorUniversity, setTutorUniversity] = useState(tutorRecord?.university || 'Trường Đại học Kinh tế, Đại học Huế');
+  const [tutorFaculty, setTutorFaculty] = useState(tutorRecord?.faculty || 'Khoa Hệ thống thông tin kinh tế');
+  const [tutorPackages, setTutorPackages] = useState<CoursePackageType[]>(tutorRecord?.packages || ['trial', 'intensive', 'long_term']);
   const [tutorSaving, setTutorSaving] = useState(false);
   const [newAvailableDay, setNewAvailableDay] = useState('');
 
@@ -83,6 +87,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     } else {
       setTutorSubjects(prev => [...prev, subjectName]);
     }
+  };
+
+  const toggleTutorPackage = (pkgId: CoursePackageType) => {
+    setTutorPackages(prev => {
+      if (prev.includes(pkgId)) {
+        if (prev.length <= 1) return prev; // Keep at least 1 package
+        return prev.filter(p => p !== pkgId);
+      }
+      return [...prev, pkgId];
+    });
   };
 
   const handleSaveTutorProfile = (e: React.FormEvent) => {
@@ -97,24 +111,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           bio: bio.trim() || 'Chia sẻ đề thi và kèm học phần đại học.',
           avatar_url: avatarUrl.trim() || currentUser.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300',
           subjects: tutorSubjects.length > 0 ? tutorSubjects : ['Toán ứng dụng trong kinh tế'],
-          hourly_rate: Number(tutorHourlyRate) || 120000,
+          hourly_rate: Number(tutorHourlyRate) || 30000,
           teaching_mode: tutorTeachingMode,
           district: district,
           experience_years: 1,
           available_days: tutorAvailableDays,
-          certifications: tutorCertifications.trim() || undefined
+          certifications: tutorCertifications.trim() || undefined,
+          university: tutorUniversity.trim(),
+          faculty: tutorFaculty.trim(),
+          packages: tutorPackages
         });
         showToast('success', 'Đã khởi tạo hồ sơ người dạy!', 'Hồ sơ đã được gửi ở trạng thái Chờ duyệt.');
       } else {
         dataService.updateTutorProfile(tutorRecord.id, {
           headline: tutorHeadline.trim(),
-          hourly_rate: Number(tutorHourlyRate) || 100000,
+          hourly_rate: Number(tutorHourlyRate) || 30000,
           teaching_mode: tutorTeachingMode,
           available_days: tutorAvailableDays,
           subjects: tutorSubjects,
-          certifications: tutorCertifications.trim() || undefined
+          certifications: tutorCertifications.trim() || undefined,
+          university: tutorUniversity.trim(),
+          faculty: tutorFaculty.trim(),
+          packages: tutorPackages
         }, currentUser.id);
-        showToast('success', 'Đã lưu hồ sơ giảng dạy!', 'Thông tin chuyên môn, mức phí và lịch rảnh của bạn đã được cập nhật.');
+        showToast('success', 'Đã lưu hồ sơ giảng dạy!', 'Thông tin chuyên môn, gói học, trường/khoa và lịch rảnh của bạn đã được cập nhật.');
       }
     } catch (err: any) {
       showToast('error', 'Lỗi lưu hồ sơ giảng dạy', err.message);
@@ -549,14 +569,79 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
               <div>
                 <label className="block text-slate-300 font-medium mb-1">
-                  Mức phí đề xuất (VNĐ / buổi 2 giờ): <span className="text-rose-400">*</span>
+                  Trường đại học tại Huế: <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={tutorUniversity}
+                  onChange={(e) => setTutorUniversity(e.target.value)}
+                  placeholder="VD: Trường Đại học Kinh tế, Đại học Huế"
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Khoa / Khóa học: <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={tutorFaculty}
+                  onChange={(e) => setTutorFaculty(e.target.value)}
+                  placeholder="VD: Khoa Hệ thống thông tin kinh tế (K44)"
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-1.5">
+                <label className="block text-slate-300 font-medium">
+                  3 Gói học chuẩn hóa bạn nhận kèm (Chương 2.6.3 & 3.3 PDF):
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {EDUMATE_PACKAGES.map((pkg) => {
+                    const isChecked = tutorPackages.includes(pkg.id);
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => toggleTutorPackage(pkg.id)}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                          isChecked
+                            ? 'bg-emerald-950/40 border-emerald-500 ring-1 ring-emerald-500/50'
+                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold ${isChecked ? 'text-emerald-400' : 'text-slate-300'}`}>
+                            {pkg.name}
+                          </span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 font-semibold text-slate-300">
+                            {pkg.sessions} buổi
+                          </span>
+                        </div>
+                        <div className="text-sm font-extrabold text-white mt-1">
+                          {pkg.price.toLocaleString('vi-VN')} đ
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          Thu nhập: <span className="text-emerald-400 font-semibold">{pkg.tutor_earnings.toLocaleString('vi-VN')} đ</span> (85%)
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Đơn giá chuẩn gói (VNĐ / buổi): <span className="text-rose-400">*</span>
                 </label>
                 <input
                   type="number"
                   value={tutorHourlyRate}
                   onChange={(e) => setTutorHourlyRate(Number(e.target.value))}
-                  min={50000}
-                  step={10000}
+                  min={30000}
+                  step={5000}
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-emerald-500"
                   required
                 />

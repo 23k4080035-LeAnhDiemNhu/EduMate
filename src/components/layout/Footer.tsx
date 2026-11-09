@@ -30,26 +30,26 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Quick links */}
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Phân Hệ Người Học</h4>
+            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Phân Hệ Học Tập EduMate</h4>
             <ul className="space-y-1.5 text-xs text-slate-400">
               <li>
-                <button onClick={() => onNavigate('submit-request')} className="hover:text-indigo-400 transition-colors">
-                  Nộp biểu mẫu yêu cầu
+                <button onClick={() => onNavigate('academic')} className="hover:text-emerald-400 transition-colors">
+                  Tìm anh/chị kèm 38 học phần
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('my-requests')} className="hover:text-indigo-400 transition-colors">
-                  Theo dõi trạng thái duyệt
+                <button onClick={() => onNavigate('submit-request')} className="hover:text-emerald-400 transition-colors">
+                  Đăng ký 3 gói học chuẩn hóa
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('academic')} className="hover:text-indigo-400 transition-colors">
-                  Danh mục mục học tập & khóa học
+                <button onClick={() => onNavigate('my-requests')} className="hover:text-emerald-400 transition-colors">
+                  Theo dõi yêu cầu & lịch học
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('orders')} className="hover:text-indigo-400 transition-colors">
-                  Đơn hàng & Xác nhận nộp phí
+                <button onClick={() => onNavigate('orders')} className="hover:text-emerald-400 transition-colors">
+                  Đối soát chuyển khoản ngân hàng
                 </button>
               </li>
             </ul>
@@ -57,26 +57,26 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Management links */}
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Quản Trị Giáo Vụ</h4>
+            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Quản Trị EduMate</h4>
             <ul className="space-y-1.5 text-xs text-slate-400">
               <li>
-                <button onClick={() => onNavigate('admin')} className="hover:text-indigo-400 transition-colors">
-                  Bàn làm việc thẩm định hồ sơ
+                <button onClick={() => onNavigate('admin')} className="hover:text-emerald-400 transition-colors">
+                  Duyệt hồ sơ anh/chị khóa trước
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('admin')} className="hover:text-indigo-400 transition-colors">
-                  Quản lý danh mục học vụ (CRUD)
+                <button onClick={() => onNavigate('admin')} className="hover:text-emerald-400 transition-colors">
+                  Báo cáo & Thống kê tài chính
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('admin')} className="hover:text-indigo-400 transition-colors">
-                  Đối soát giao dịch chuyển khoản
+                <button onClick={() => onNavigate('admin')} className="hover:text-emerald-400 transition-colors">
+                  Quản lý yêu cầu kết nối học
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('admin')} className="hover:text-indigo-400 transition-colors">
-                  Nhật ký kiểm toán (Audit Trails)
+                <button onClick={() => onNavigate('admin')} className="hover:text-emerald-400 transition-colors">
+                  Kiểm duyệt đánh giá & phản ánh
                 </button>
               </li>
             </ul>
@@ -84,24 +84,37 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Compliance & Security statement */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Bảo Mật & Phạm Vi</h4>
+            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Bảo Mật & Pháp Lý</h4>
             <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5 text-[11px]">
-              <div className="flex items-center space-x-1.5 text-indigo-400 font-semibold">
+              <div className="flex items-center space-x-1.5 text-emerald-400 font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>PostgreSQL RLS Engine</span>
+                <span>EduMate RLS & Security Engine</span>
               </div>
               <p className="text-slate-400 leading-normal">
-                Kiểm soát truy cập mức hàng (Row-Level Security). Chưa tích hợp cổng thanh toán trực tiếp, toàn bộ giao dịch được đối soát có kiểm chứng.
+                Phân quyền bảo mật nghiêm ngặt. Cam kết bảo vệ quyền lợi sinh viên và chuyển khoản trực tiếp an toàn theo Chương 4.4 của PDF Đồ án.
               </p>
             </div>
           </div>
 
         </div>
 
-        <div className="pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400">
-          <div>© 2026 EduMate Platform. Bản quyền hệ thống thuộc về dự án EduMate.</div>
+        {/* Academic Authorship Banner from PDF */}
+        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-300 space-y-1 leading-relaxed">
+          <div className="font-bold text-white text-xs">
+            Đề tài Khởi nghiệp Đổi mới Sáng tạo: "EduMate - Nền tảng kết nối người học và người dạy"
+          </div>
+          <div>
+            <strong>Sinh viên thực hiện:</strong> Nguyễn Thị Nhân (MSSV: 23K4080030) & Lê Ánh Diễm Như (MSSV: 23K4080035)
+          </div>
+          <div className="text-slate-400">
+            <strong>Giảng viên hướng dẫn:</strong> ThS. Trần Thái Hòa • Khoa Hệ thống thông tin kinh tế - Trường Đại học Kinh tế, Đại học Huế (HCE)
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400">
+          <div>© 2026 EduMate Huế Platform. Bảo lưu mọi quyền theo Đồ án Khởi nghiệp Đổi mới Sáng tạo.</div>
           <div className="flex items-center space-x-4 text-[11px]">
-            <span>React + TypeScript + Vite</span>
+            <span>React 19 + TypeScript</span>
             <span>•</span>
             <span>Tailwind CSS</span>
             <span>•</span>

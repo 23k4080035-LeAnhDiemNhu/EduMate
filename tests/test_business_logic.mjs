@@ -183,7 +183,7 @@ class TestDataStore {
     return this.requests[idx];
   }
 
-  updateOrderStatus(orderId, status, managerId, managerName) {
+  updateOrderStatus(orderId, status, managerId, _managerName) {
     const mgr = this.getProfileById(managerId);
     if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
       throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền cập nhật trạng thái đơn hàng.');
@@ -201,7 +201,7 @@ class TestDataStore {
     return { ...payment, id: 'pay-new', status: 'pending' };
   }
 
-  verifyPayment(paymentId, status, managerId, managerName) {
+  verifyPayment(paymentId, status, managerId, _managerName) {
     const mgr = this.getProfileById(managerId);
     if (!mgr || !['manager', 'admin'].includes(mgr.role)) {
       throw new Error('UNAUTHORIZED: Chỉ Người quản lý (Manager/Admin) mới có quyền đối soát và xác nhận thanh toán.');

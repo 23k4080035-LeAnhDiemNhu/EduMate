@@ -12,6 +12,7 @@ import {
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer, type ToastMessage, type ToastType } from './components/common/Toast';
+import { Forbidden403 } from './components/common/Forbidden403';
 
 
 // 8 Pages
@@ -23,6 +24,7 @@ import { MyRequestsPage } from './pages/MyRequestsPage';
 import { AcademicPage } from './pages/AcademicPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { AdminPage } from './pages/AdminPage';
+import { PaymentPage } from './pages/PaymentPage';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<string>('home');
@@ -83,8 +85,18 @@ export function App() {
     };
   }, []);
 
-  // Switch role handler: Automatically syncs with a profile matching that role
+  // Switch role handler: Automatically syncs with a profile matching that role (Demo Sandbox only)
   const handleSwitchRole = (newRole: UserRole) => {
+    // SECURITY ENFORCEMENT: Role Switcher is strictly DISABLED in Live Production
+    if (isSupabaseConfigured) {
+      showToast(
+        'error',
+        'Thao tác không được phép',
+        'Trong môi trường thực tế, vai trò được xác thực độc lập từ Supabase Auth. Vui lòng đăng nhập với tài khoản có vai trò tương ứng.'
+      );
+      return;
+    }
+
     setCurrentRole(newRole);
     const profiles = dataService.getProfiles();
     const matchingProfile = profiles.find(p => p.role === newRole) || profiles[0];
@@ -137,6 +149,7 @@ export function App() {
     setCurrentUser(updated);
   };
 
+  const [pageParams, setPageParams] = useState<any>({});
   const [academicParams, setAcademicParams] = useState<{
     search?: string;
     district?: string;
@@ -144,10 +157,12 @@ export function App() {
     tutorId?: string;
   }>({});
 
-  const handleNavigate = (page: string, params?: { search?: string; district?: string; category?: string; tutorId?: string }) => {
+  const handleNavigate = (page: string, params?: any) => {
     if (params) {
+      setPageParams(params);
       setAcademicParams(params);
     } else {
+      setPageParams({});
       setAcademicParams({});
     }
     setCurrentPage(page);
@@ -253,22 +268,44 @@ export function App() {
           />
         );
 
-      case 'admin':
-        if (!currentUser || (currentRole !== 'manager' && currentRole !== 'admin')) {
+      case 'payment':
+        if (!currentUser) {
           return (
-            <div className="max-w-md mx-auto text-center py-16 space-y-4">
-              <div className="text-4xl">🛡️</div>
-              <h2 className="text-lg font-bold text-white">Yêu cầu quyền Người quản lý</h2>
-              <p className="text-xs text-slate-400">
-                Khu vực này chỉ dành cho Ban Quản trị Giáo vụ. Vui lòng chuyển đổi vai trò ở thanh tiêu đề sang "Quản lý".
-              </p>
-              <button
-                onClick={() => handleSwitchRole('manager')}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all cursor-pointer"
-              >
-                Chuyển sang vai trò Quản lý
-              </button>
-            </div>
+            <AuthPage
+              onLoginSuccess={handleLoginSuccess}
+              onNavigate={handleNavigate}
+              showToast={showToast}
+            />
+          );
+        }
+        if (currentUser.role === 'tutor') {
+          return (
+            <Forbidden403
+              requiredRole="Người học (Student)"
+              currentRole="tutor"
+              resourceName="Cổng thanh toán học phí VietQR"
+              onNavigate={handleNavigate}
+            />
+          );
+        }
+        return (
+          <PaymentPage
+            currentUser={currentUser}
+            onNavigate={handleNavigate}
+            showToast={showToast}
+            initialParams={pageParams}
+          />
+        );
+
+      case 'admin':
+        if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
+          return (
+            <Forbidden403
+              requiredRole="Quản trị viên (Manager)"
+              currentRole={currentUser?.role || 'guest'}
+              resourceName="Bảng điều khiển Quản trị & Đối soát tài chính"
+              onNavigate={handleNavigate}
+            />
           );
         }
         return (

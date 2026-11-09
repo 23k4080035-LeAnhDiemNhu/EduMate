@@ -8,10 +8,10 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 // Read subjects from src/data/subjects.ts
-const subjectsFile = fs.readFileSync(path.join(rootDir, 'src', 'data', 'subjects.ts'), 'utf-8');
+const _subjectsFile = fs.readFileSync(path.join(rootDir, 'src', 'data', 'subjects.ts'), 'utf-8');
 
 // Read dataService from src/services/dataService.ts
-const dataServiceFile = fs.readFileSync(path.join(rootDir, 'src', 'services', 'dataService.ts'), 'utf-8');
+const _dataServiceFile = fs.readFileSync(path.join(rootDir, 'src', 'services', 'dataService.ts'), 'utf-8');
 
 // Parse initial data blocks using regex or mock
 console.log('Đang trích xuất dữ liệu EduMate...');
@@ -24,10 +24,26 @@ const exportData = {
   platform: {
     name: "EduMate Huế",
     slogan: "Tìm đúng người dạy – Học đúng điều cần.",
-    target_audience: "Sinh viên và người trẻ tại khu vực Huế",
+    target_audience: "Sinh viên Trường Đại học Kinh tế, Đại học Huế (HCE) và các trường thành viên ĐH Huế",
+    authors: [
+      { name: "Nguyễn Thị Nhân", code: "23K4080030" },
+      { name: "Lê Ánh Diễm Như", code: "23K4080035" }
+    ],
+    advisor: "ThS. Trần Thái Hòa",
+    faculty: "Khoa Hệ thống thông tin kinh tế - Trường ĐH Kinh tế, ĐH Huế",
     exported_at: new Date().toISOString(),
-    version: "2.0.0"
+    version: "2.1.0"
   },
+  content_groups: [
+    { id: "practical_skills", name: "Kỹ năng thực hành", examples: ["Excel kinh tế", "PowerPoint thuyết trình", "Thiết kế Canva", "Tin học MOS"] },
+    { id: "general_education", name: "Môn học đại cương", examples: ["Triết học", "Kinh tế chính trị", "Toán ứng dụng", "Pháp luật"] },
+    { id: "major_specialization", name: "Môn học chuyên ngành", examples: ["Nguyên lý kế toán", "Kinh tế lượng", "HTTT Quản lý", "CSDL nâng cao"] }
+  ],
+  packages: [
+    { id: "trial", name: "Gói học thử", sessions: 3, price: 90000, price_per_session: 30000, platform_fee: 13500, tutor_earnings: 76500 },
+    { id: "intensive", name: "Gói cấp tốc", sessions: 15, price: 450000, price_per_session: 30000, platform_fee: 67500, tutor_earnings: 382500 },
+    { id: "long_term", name: "Gói dài hạn", sessions: 12, price: 360000, price_per_session: 30000, platform_fee: 54000, tutor_earnings: 306000 }
+  ],
   users: [
     {
       id: "usr-student-01",
@@ -130,7 +146,10 @@ const exportData = {
       rating_avg: 4.9,
       rating_count: 18,
       available_days: ["Tối thứ 2", "Tối thứ 4", "Chiều thứ 7", "Chủ nhật"],
-      certifications: "Cựu sinh viên Xuất sắc K44 ĐH Huế, Điểm A+ toàn bộ các học phần Toán & Kinh tế lượng"
+      certifications: "Cựu sinh viên Xuất sắc K44 ĐH Huế, Điểm A+ toàn bộ các học phần Toán & Kinh tế lượng",
+      university: "Trường Đại học Kinh tế, Đại học Huế",
+      faculty: "Khoa Hệ thống thông tin kinh tế",
+      packages: ["trial", "intensive", "long_term"]
     },
     {
       id: "tut-02",
@@ -148,7 +167,10 @@ const exportData = {
       rating_avg: 5.0,
       rating_count: 24,
       available_days: ["Sáng thứ 3", "Chiều thứ 5", "Tối thứ 6", "Chủ nhật"],
-      certifications: "IELTS 8.0, Điểm A Tiếng Anh chuyên ngành Kinh tế & Quản trị học"
+      certifications: "IELTS 8.0, Điểm A Tiếng Anh chuyên ngành Kinh tế & Quản trị học",
+      university: "Trường Đại học Kinh tế, Đại học Huế",
+      faculty: "Khoa Quản trị kinh doanh",
+      packages: ["trial", "intensive", "long_term"]
     },
     {
       id: "tut-03",
@@ -166,7 +188,10 @@ const exportData = {
       rating_avg: 4.8,
       rating_count: 31,
       available_days: ["Tối thứ 3", "Tối thứ 5", "Chiều Chủ nhật"],
-      certifications: "Kỹ sư Phần mềm, Đạt giải Nhì Olympic Tin học Sinh viên ĐH Huế"
+      certifications: "Kỹ sư Phần mềm, Đạt giải Nhì Olympic Tin học Sinh viên ĐH Huế",
+      university: "Trường Đại học Kinh tế, Đại học Huế",
+      faculty: "Khoa Hệ thống thông tin kinh tế",
+      packages: ["trial", "intensive", "long_term"]
     },
     {
       id: "tut-04",
@@ -184,7 +209,10 @@ const exportData = {
       rating_avg: 4.7,
       rating_count: 12,
       available_days: ["Tối thứ 2", "Tối thứ 6", "Sáng thứ 7"],
-      certifications: "Sinh viên 5 tốt cấp Trường ĐH Kinh tế Huế, Điểm A+ Nguyên lý kế toán"
+      certifications: "Sinh viên 5 tốt cấp Trường ĐH Kinh tế Huế, Điểm A+ Nguyên lý kế toán",
+      university: "Trường Đại học Kinh tế, Đại học Huế",
+      faculty: "Khoa Kế toán - Tài chính",
+      packages: ["trial", "intensive", "long_term"]
     }
   ],
   categories: [

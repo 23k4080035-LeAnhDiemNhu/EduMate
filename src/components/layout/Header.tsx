@@ -105,45 +105,75 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{isSupabaseConfigured ? 'Supabase Live' : 'Mô phỏng Local Engine'}</span>
             </div>
 
-            {/* 3-Role switch toggle */}
-            <div className="flex items-center bg-slate-900 border border-slate-800 p-0.5 rounded-xl">
-              <button
-                onClick={() => onSwitchRole('student')}
-                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  currentRole === 'student'
-                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Đổi vai trò sang Người học (Học viên)"
-              >
-                <UserCheck className="w-3 h-3" />
-                <span className="hidden sm:inline">Người học</span>
-              </button>
-              <button
-                onClick={() => onSwitchRole('tutor')}
-                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  currentRole === 'tutor'
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Đổi vai trò sang Người dạy (Anh/Chị khóa trước)"
-              >
-                <GraduationCap className="w-3 h-3" />
-                <span className="hidden sm:inline">Người dạy</span>
-              </button>
-              <button
-                onClick={() => onSwitchRole('manager')}
-                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+            {/* Role indicator or Demo Role switcher */}
+            {isSupabaseConfigured ? (
+              /* Live Mode: Role is strictly authenticated via Supabase Auth - No Demo Switcher */
+              <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs shadow-inner">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-slate-400 hidden sm:inline">Quyền:</span>
+                <span className={`font-bold font-mono text-[11px] uppercase ${
                   currentRole === 'manager' || currentRole === 'admin'
-                    ? 'bg-gradient-to-r from-indigo-600 to-slate-700 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Đổi vai trò sang Quản trị viên"
-              >
-                <ShieldCheck className="w-3 h-3" />
-                <span className="hidden sm:inline">Quản lý</span>
-              </button>
-            </div>
+                    ? 'text-indigo-400'
+                    : currentRole === 'tutor'
+                    ? 'text-blue-400'
+                    : 'text-emerald-400'
+                }`}>
+                  {currentRole === 'manager' || currentRole === 'admin'
+                    ? 'Quản lý'
+                    : currentRole === 'tutor'
+                    ? 'Người dạy'
+                    : 'Người học'}
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-mono hidden md:inline">
+                  Supabase RLS
+                </span>
+              </div>
+            ) : (
+              /* Demo Sandbox: Switcher with clear mock indicator */
+              <div className="flex items-center space-x-1.5">
+                <span className="hidden xl:inline text-[9px] text-amber-400 font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                  Demo Switcher
+                </span>
+                <div className="flex items-center bg-slate-900 border border-slate-800 p-0.5 rounded-xl">
+                  <button
+                    onClick={() => onSwitchRole('student')}
+                    className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      currentRole === 'student'
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    title="Đổi vai trò mô phỏng: Người học"
+                  >
+                    <UserCheck className="w-3 h-3" />
+                    <span className="hidden sm:inline">Người học</span>
+                  </button>
+                  <button
+                    onClick={() => onSwitchRole('tutor')}
+                    className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      currentRole === 'tutor'
+                        ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    title="Đổi vai trò mô phỏng: Người dạy"
+                  >
+                    <GraduationCap className="w-3 h-3" />
+                    <span className="hidden sm:inline">Người dạy</span>
+                  </button>
+                  <button
+                    onClick={() => onSwitchRole('manager')}
+                    className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      currentRole === 'manager' || currentRole === 'admin'
+                        ? 'bg-gradient-to-r from-indigo-600 to-slate-700 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    title="Đổi vai trò mô phỏng: Quản lý"
+                  >
+                    <ShieldCheck className="w-3 h-3" />
+                    <span className="hidden sm:inline">Quản lý</span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Profile or Login Button */}
             {currentUser ? (

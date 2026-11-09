@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Profile, LearningRequest, LearningRequestStatus } from '../types';
+import type { Profile, LearningRequest, LearningRequestStatus, PaymentIntentStatus } from '../types';
 import { dataService } from '../services/dataService';
 import { EmptyState } from '../components/common/EmptyState';
 import { 
@@ -14,12 +14,14 @@ import {
   X,
   Check,
   Flag,
-  AlertTriangle
+  AlertTriangle,
+  QrCode,
+  Banknote
 } from 'lucide-react';
 
 interface MyRequestsPageProps {
   currentUser: Profile;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, params?: any) => void;
   showToast: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
 }
 
@@ -111,17 +113,19 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
     }
 
     try {
-      dataService.updateLearningRequestStatus(
+      const res = dataService.processTutorRejectionRefund(
         rejectingReq.id,
-        'rejected',
-        currentUser.id,
-        currentUser.full_name,
-        rejectReason.trim()
+        rejectReason.trim(),
+        currentUser.id
       );
       setRejectingReq(null);
       setRejectReason('');
       loadRequests();
-      showToast('info', 'Đã từ chối yêu cầu', 'Thông báo và lý do đã được lưu để phản hồi học viên.');
+      if (res.refund) {
+        showToast('info', 'Đã từ chối yêu cầu', `Học viên đã thanh toán trước đó nên hệ thống đã tự động tạo yêu cầu hoàn tiền 100% (${res.refund.refund_amount_vnd.toLocaleString('vi-VN')} đ) cho học viên.`);
+      } else {
+        showToast('info', 'Đã từ chối yêu cầu', 'Thông báo và lý do đã được lưu để phản hồi học viên.');
+      }
     } catch (err: any) {
       setRejectError(err.message || 'Lỗi thao tác');
     }
@@ -228,6 +232,65 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
     }
   };
 
+  const getPaymentBadge = (status?: PaymentIntentStatus) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>Chờ thanh toán</span>
+          </span>
+        );
+      case 'awaiting_verification':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+            <span>Đang đối soát</span>
+          </span>
+        );
+      case 'paid':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>Đã thanh toán</span>
+          </span>
+        );
+      case 'needs_review':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-500/15 text-orange-300 border border-orange-500/30 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+            <span>Cần kiểm tra</span>
+          </span>
+        );
+      case 'refund_pending':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+            <span>Chờ hoàn tiền</span>
+          </span>
+        );
+      case 'refunded':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+            <span>Đã hoàn tiền 100%</span>
+          </span>
+        );
+      case 'cancelled':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+            Hủy thanh toán
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+            Chưa thanh toán
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn">
       
@@ -309,11 +372,12 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
             >
               {/* Row 1: Code, Status, Time */}
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs font-bold text-white bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
                     {req.request_code}
                   </span>
                   {getStatusBadge(req.status)}
+                  {getPaymentBadge(req.payment_status)}
                 </div>
                 <div className="text-[11px] text-slate-400 flex items-center space-x-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -361,6 +425,30 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
                   )}
                 </div>
 
+              </div>
+
+              {/* Package & Fee details according to PDF Chapter 2.6 & 3.3 */}
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center space-x-2">
+                  <span className="text-[10px] uppercase font-bold text-slate-500">Gói học:</span>
+                  <span className="font-bold text-white px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    {req.package_name || 'Gói học thử'} ({req.total_sessions || 3} buổi)
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-4 text-[11px]">
+                  {currentUser.role === 'tutor' ? (
+                    <div>
+                      <span className="text-slate-400">Thu nhập bạn nhận được: </span>
+                      <span className="font-bold text-emerald-400">{(req.tutor_earnings || 76500).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-slate-400">Học phí cần đóng: </span>
+                      <span className="font-bold text-emerald-400">{(req.total_price || 90000).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Row 3: Learning Goals text */}
@@ -429,6 +517,39 @@ export const MyRequestsPage: React.FC<MyRequestsPageProps> = ({
                     >
                       <Check className="w-3.5 h-3.5" />
                       <span>Xác nhận hoàn thành khóa học</span>
+                    </button>
+                  )}
+
+                  {/* Learner Actions: Pay with VietQR if pending payment */}
+                  {currentUser.role === 'student' && (!req.payment_status || req.payment_status === 'pending') && req.status !== 'cancelled' && req.status !== 'rejected' && (
+                    <button
+                      onClick={() => onNavigate('payment', { requestId: req.id })}
+                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 cursor-pointer flex items-center space-x-1.5"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>Thanh toán VietQR</span>
+                    </button>
+                  )}
+
+                  {/* Learner Actions: View Verification Progress */}
+                  {currentUser.role === 'student' && req.payment_status === 'awaiting_verification' && (
+                    <button
+                      onClick={() => onNavigate('payment', { requestId: req.id })}
+                      className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 text-xs font-semibold transition-all border border-blue-500/30 cursor-pointer flex items-center space-x-1"
+                    >
+                      <Clock className="w-3.5 h-3.5 text-blue-400 animate-spin" />
+                      <span>Xem đối soát</span>
+                    </button>
+                  )}
+
+                  {/* Learner Actions: Track Refund if refund pending or refunded */}
+                  {currentUser.role === 'student' && (req.payment_status === 'refund_pending' || req.payment_status === 'refunded') && (
+                    <button
+                      onClick={() => onNavigate('payment', { requestId: req.id })}
+                      className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 text-xs font-semibold transition-all border border-purple-500/30 cursor-pointer flex items-center space-x-1"
+                    >
+                      <Banknote className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Theo dõi hoàn tiền</span>
                     </button>
                   )}
 

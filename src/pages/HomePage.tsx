@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { UserRole } from '../types';
 import { dataService } from '../services/dataService';
+import { EDUMATE_PACKAGES } from '../types';
 import { 
   GraduationCap, 
   Search, 
@@ -10,22 +11,25 @@ import {
   CheckCircle2, 
   ShieldCheck, 
   ArrowRight, 
-  Sparkles,
-  Clock,
-  Users
+  Sparkles, 
+  Clock, 
+  Users, 
+  Check 
 } from 'lucide-react';
 
 interface HomePageProps {
-  onNavigate: (page: string, params?: { search?: string; district?: string; category?: string; tutorId?: string }) => void;
+  onNavigate: (page: string, params?: { search?: string; district?: string; category?: string; tutorId?: string; packageType?: string }) => void;
   currentRole: UserRole;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _currentRole }) => {
+export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole }) => {
   const [searchSubject, setSearchSubject] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('all');
 
   const categories = dataService.getSubjectCategories();
   const tutors = dataService.getTutors(true); // Chỉ lấy người dạy Đã duyệt (verified)
+  const packages = EDUMATE_PACKAGES;
+  const contentGroups = dataService.getContentGroups();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
   };
 
   return (
-    <div className="space-y-16 animate-fadeIn">
+    <div className="space-y-16 animate-fadeIn pb-12">
       
       {/* ========================================================================= */}
       {/* 1. HERO SECTION & BRAND SLOGAN */}
@@ -46,7 +50,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           
           <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Mô hình kết nối Sinh viên Khóa Trước kèm Khóa Dưới tại Huế</span>
+            <span>Đề Án Khởi Nghiệp Đổi Mới Sáng Tạo • Trường Đại học Kinh tế, Đại học Huế</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
@@ -57,7 +61,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
-            EduMate kết nối sinh viên Đại học Huế với các <strong>anh/chị khóa trước (thủ khoa, sinh viên giỏi K43 - K46)</strong> đã vượt qua 38 học phần đại học với điểm A/A+, sẵn sàng chia sẻ đề thi, đề cương và kèm 1-1 sát với cấu trúc thi học kỳ.
+            EduMate là nền tảng số kết nối sinh viên Đại học Huế với các <strong>anh/chị khóa trước đạt điểm A/A+</strong>, giải quyết trực tiếp nhu cầu về <strong>Kỹ năng thực hành</strong>, <strong>Môn học đại cương</strong> và <strong>Môn học chuyên ngành</strong> với mô hình gói học minh bạch, tiết kiệm.
           </p>
 
           {/* Quick Search Bar */}
@@ -73,7 +77,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
                   type="text"
                   value={searchSubject}
                   onChange={(e) => setSearchSubject(e.target.value)}
-                  placeholder="Mã môn (ECO2013, KTPT...), tên học phần..."
+                  placeholder="Môn học (Kinh tế lượng, Kế toán...) hoặc kỹ năng (Excel, Canva)..."
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all"
                 />
               </div>
@@ -102,7 +106,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
                   className="w-full h-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
                 >
                   <Search className="w-3.5 h-3.5" />
-                  <span>Tìm anh/chị khóa trước</span>
+                  <span>Tìm người dạy phù hợp</span>
                 </button>
               </div>
             </form>
@@ -112,15 +116,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
             <span className="flex items-center space-x-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>100% Anh/Chị khóa trước đạt điểm A/A+</span>
+              <span>100% Hồ sơ người dạy được kiểm duyệt</span>
             </span>
             <span className="flex items-center space-x-1.5">
               <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>Chia sẻ đề cương & đề thi các năm</span>
+              <span>3 Gói học chuẩn hóa: 30.000đ/buổi</span>
+            </span>
+            <span className="flex items-center space-x-1.5">
+              <Clock className="w-4 h-4 text-amber-400" />
+              <span>Hoàn tiền 100% nếu người dạy từ chối</span>
             </span>
             <span className="flex items-center space-x-1.5">
               <Users className="w-4 h-4 text-teal-400" />
-              <span>Kèm 1-1 tại Huế hoặc Online</span>
+              <span>Học kèm 1-1 tại Huế hoặc Online</span>
             </span>
           </div>
 
@@ -128,7 +136,161 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. SUBJECT & SKILL CATEGORIES */}
+      {/* 2. THREE CORE CONTENT PILLARS (CHƯƠNG 1 & 4 CỦA PDF) */}
+      {/* ========================================================================= */}
+      <section className="space-y-6">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <span>3 Trụ cột nội dung đào tạo trọng tâm</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">
+            Nội dung EduMate kết nối & hỗ trợ
+          </h2>
+          <p className="text-xs text-slate-400">
+            Tập trung vào ba nhóm dịch vụ thiết thực nhất đối với sinh viên Trường Đại học Kinh tế và Đại học Huế
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {contentGroups.map((group, idx) => (
+            <div 
+              key={group.id}
+              onClick={() => onNavigate('academic')}
+              className="glass-panel p-6 rounded-3xl border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900/70 transition-all cursor-pointer space-y-4 group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-emerald-400 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  Trụ cột 0{idx + 1}
+                </span>
+                <span className="text-[11px] text-slate-400 group-hover:text-emerald-300 flex items-center space-x-1">
+                  <span>Xem môn</span>
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
+                  {group.name}
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  {group.short_desc}
+                </p>
+              </div>
+
+              <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Môn/kỹ năng tiêu biểu:</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.examples.map((ex, i) => (
+                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-lg bg-slate-800/80 text-slate-300 border border-slate-700">
+                      {ex}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3. THREE STANDARDIZED COURSE PACKAGES (CHƯƠNG 2.6.3 & CHƯƠNG 3.3 CỦA PDF) */}
+      {/* ========================================================================= */}
+      <section className="space-y-6">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span>Chính sách giá & Doanh thu theo đồ án</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">
+            3 Gói học chuẩn hóa – Chi phí tối ưu cho sinh viên
+          </h2>
+          <p className="text-xs text-slate-400">
+            Mức giá đồng nhất <strong>30.000 đồng/buổi</strong> học kèm chất lượng. Học phí minh bạch, tiết kiệm tối ưu cho sinh viên.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {packages.map((pkg) => (
+            <div 
+              key={pkg.id}
+              className={`rounded-3xl p-6 flex flex-col justify-between space-y-6 transition-all relative ${
+                pkg.popular 
+                  ? 'bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-emerald-500 shadow-2xl shadow-emerald-500/10'
+                  : 'glass-panel border border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              {pkg.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow-md">
+                  Gói phổ biến nhất
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white">{pkg.name}</h3>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">{pkg.description}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-emerald-400">
+                      {pkg.price.toLocaleString('vi-VN')} đ
+                    </span>
+                    <span className="text-xs font-bold text-slate-300">
+                      {pkg.sessions} buổi học
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
+                    <span>Đơn giá mỗi buổi:</span>
+                    <span className="font-semibold text-white">{pkg.price_per_session.toLocaleString('vi-VN')} đ / buổi</span>
+                  </div>
+                  {currentRole === 'tutor' ? (
+                    <div className="text-[11px] text-slate-400 flex items-center justify-between">
+                      <span>Thu nhập bạn nhận được:</span>
+                      <span className="font-semibold text-emerald-400">{pkg.tutor_earnings.toLocaleString('vi-VN')} đ</span>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-slate-400 flex items-center justify-between">
+                      <span>Học phí người học đóng:</span>
+                      <span className="font-semibold text-emerald-400">{pkg.price.toLocaleString('vi-VN')} đ</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 text-xs text-slate-300">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Phù hợp với:</div>
+                  <div className="flex items-start space-x-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="text-xs text-slate-300">{pkg.suitable_for}</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="text-xs text-slate-300">Chia sẻ đề cương, ngân hàng đề thi & bài tập lớn</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="text-xs text-slate-300">Được gửi phản hồi, đánh giá chất lượng sau khi hoàn thành</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onNavigate('academic', { packageType: pkg.id })}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+                  pkg.popular
+                    ? 'bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white shadow-lg shadow-emerald-600/20'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                }`}
+              >
+                <span>Tìm người dạy gói này</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 4. SUBJECT CATEGORIES */}
       {/* ========================================================================= */}
       <section className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
@@ -178,25 +340,26 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
         {/* Banner Quick Link to 38 University Subjects Table */}
         <div 
           onClick={() => onNavigate('academic')}
-          className="p-5 rounded-2xl bg-gradient-to-r from-blue-900/40 via-emerald-950/40 to-teal-900/40 border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-4 cursor-pointer hover:border-emerald-400/60 transition-all group"
+          className="p-5 rounded-3xl bg-gradient-to-r from-blue-950/70 via-slate-900 to-emerald-950/60 border border-slate-700/80 hover:border-emerald-500/50 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer transition-all shadow-xl group"
         >
-          <div className="flex items-center space-x-3.5">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
               <BookOpen className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-bold text-white">Tra cứu trọn bộ 38 Học phần Đại học tại Huế</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Chuẩn hóa tín chỉ
+                <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                  Bảng Tra Cứu Học Phần Đại Học & Kỹ Năng Thực Hành
+                </h4>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                  Chuẩn hóa theo PDF
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Nguyên lý kế toán (ECO2013), Kinh tế vi mô (KTPT2023), CSDL nâng cao (HTTT4233), ERP (ECO2407), Kinh tế lượng (ECO2411)...
+              <p className="text-xs text-slate-400 mt-0.5">
+                Xem chi tiết mã môn, số tín chỉ, đề cương tóm tắt và danh sách anh/chị khóa trước sẵn sàng nhận kèm theo từng môn
               </p>
             </div>
           </div>
-
           <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-400 group-hover:text-emerald-300 shrink-0">
             <span>Mở bảng tra cứu & tìm người dạy</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -205,7 +368,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. FEATURED VERIFIED TUTORS IN HUẾ */}
+      {/* 5. FEATURED VERIFIED TUTORS IN HUẾ */}
       {/* ========================================================================= */}
       <section className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
@@ -218,7 +381,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
               Đội ngũ Anh/Chị Khóa Trước Tiêu Biểu Tại Huế
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Thủ khoa học phần, sinh viên giỏi khóa trên (K43, K44, K45, K46) nắm chắc đề thi và bài tập lớn
+              Thủ khoa học phần, sinh viên giỏi khóa trên (K43, K44, K45, K46) trường Đại học Kinh tế, Đại học Huế
             </p>
           </div>
           <button
@@ -276,7 +439,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
 
                 {/* Subjects tags */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {tutor.subjects.map((sub, idx) => (
+                  {tutor.subjects.slice(0, 4).map((sub, idx) => (
                     <span
                       key={idx}
                       className="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-slate-800 text-slate-300 border border-slate-700"
@@ -302,9 +465,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
               {/* Footer: Fee & CTA */}
               <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] text-slate-500">Mức phí đề xuất</div>
+                  <div className="text-[10px] text-slate-500">Gói học kèm từ</div>
                   <div className="text-sm font-extrabold text-emerald-400">
-                    {tutor.hourly_rate.toLocaleString('vi-VN')} đ <span className="text-[10px] font-normal text-slate-400">/ buổi (2h)</span>
+                    30.000 đ <span className="text-[10px] font-normal text-slate-400">/ buổi</span>
                   </div>
                 </div>
 
@@ -319,7 +482,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
                     onClick={() => onNavigate('academic', { tutorId: tutor.id })}
                     className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center space-x-1 cursor-pointer"
                   >
-                    <span>Gửi yêu cầu</span>
+                    <span>Chọn gói</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -330,57 +493,80 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. BUSINESS PROCESS / HOW IT WORKS (QUY TRÌNH A -> E) */}
+      {/* 6. SIX-STEP CORE WORKFLOW (CHƯƠNG 4.3 CỦA PDF) */}
       {/* ========================================================================= */}
       <section className="glass-panel p-8 rounded-3xl border border-slate-800 space-y-8 bg-gradient-to-b from-slate-900/60 to-slate-950/80">
         <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span>Quy trình sử dụng nền tảng (Chương 4.3 PDF)</span>
+          </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white">
-            Quy trình kết nối minh bạch & an tâm
+            6 Bước kết nối học tập chuẩn mực
           </h2>
           <p className="text-xs text-slate-400">
-            Hệ thống đảm bảo quyền lợi cho cả người học và người dạy qua 4 bước chuẩn mực
+            Minh bạch quyền lợi và trách nhiệm của người học và người dạy
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
             <div className="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 font-extrabold flex items-center justify-center text-xs border border-blue-500/30">
               01
             </div>
-            <h3 className="text-xs font-bold text-white">Tìm kiếm & Lọc</h3>
+            <h3 className="text-xs font-bold text-white">Tạo hồ sơ & Đăng gói học</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Người học tra cứu người dạy theo môn học, mức phí và khu vực cụ thể tại Huế (Hương Thủy, Hương Trà, Phú Vang...).
+              Người dạy tạo hồ sơ năng lực, chọn môn học/kỹ năng có thể kèm và đăng ký cung cấp 3 gói học chuẩn (Học thử, Cấp tốc, Dài hạn).
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
             <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-400 font-extrabold flex items-center justify-center text-xs border border-emerald-500/30">
               02
             </div>
-            <h3 className="text-xs font-bold text-white">Gửi yêu cầu học</h3>
+            <h3 className="text-xs font-bold text-white">Tìm kiếm & Chọn gói phù hợp</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Điền mục tiêu cần học, hình thức và khung giờ mong muốn. Yêu cầu được gửi ở trạng thái <em>Chờ xác nhận</em>.
+              Người học tra cứu theo môn, kỹ năng, khu vực tại Huế và tham khảo số buổi, mức phí của từng gói học.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
             <div className="w-8 h-8 rounded-xl bg-teal-600/20 text-teal-400 font-extrabold flex items-center justify-center text-xs border border-teal-500/30">
               03
             </div>
-            <h3 className="text-xs font-bold text-white">Xác nhận & Thống nhất</h3>
+            <h3 className="text-xs font-bold text-white">Gửi yêu cầu kết nối</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Người dạy nhận thông báo, xem xét thời gian và chọn chấp nhận hoặc từ chối kèm lý do rõ ràng.
+              Điền mục tiêu cần học, khung giờ mong muốn và gửi yêu cầu ở trạng thái <em>Chờ xác nhận</em> đến người dạy.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
             <div className="w-8 h-8 rounded-xl bg-amber-600/20 text-amber-400 font-extrabold flex items-center justify-center text-xs border border-amber-500/30">
               04
             </div>
-            <h3 className="text-xs font-bold text-white">Hoàn thành & Đánh giá</h3>
+            <h3 className="text-xs font-bold text-white">Xác nhận & Thống nhất lịch</h3>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Sau buổi học hoàn thành, người học gửi đánh giá sao & nhận xét thực tế. Ngăn chặn đánh giá ảo tuyệt đối.
+              Người dạy xem xét yêu cầu và phản hồi chấp nhận hoặc từ chối kèm lý do. Hai bên thống nhất lịch học chi tiết.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+            <div className="w-8 h-8 rounded-xl bg-indigo-600/20 text-indigo-400 font-extrabold flex items-center justify-center text-xs border border-indigo-500/30">
+              05
+            </div>
+            <h3 className="text-xs font-bold text-white">Thực hiện các buổi học</h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Hai bên tiến hành các buổi học theo thỏa thuận (trực tiếp tại Huế hoặc Online), chia sẻ đề cương và giải bài tập lớn.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+            <div className="w-8 h-8 rounded-xl bg-rose-600/20 text-rose-400 font-extrabold flex items-center justify-center text-xs border border-rose-500/30">
+              06
+            </div>
+            <h3 className="text-xs font-bold text-white">Hoàn thành & Phản hồi</h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Sau khi gói học hoàn tất, người học gửi đánh giá sao & nhận xét thực tế để nâng cao độ tin cậy của nền tảng.
             </p>
           </div>
 
@@ -407,7 +593,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. ACADEMIC INTEGRITY & MVP TRANSPARENCY NOTICE */}
+      {/* 7. ACADEMIC INTEGRITY & MVP TRANSPARENCY NOTICE */}
       {/* ========================================================================= */}
       <section className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
@@ -416,16 +602,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, currentRole: _cu
           </div>
           <div>
             <div className="font-bold text-slate-200">
-              Cam kết minh bạch phục vụ Đồ án Sinh viên
+              Đề tài Khởi nghiệp Đổi mới Sáng tạo • Đại học Huế
             </div>
             <div className="text-[11px] text-slate-400">
-              Dữ liệu hiển thị dựa trên hồ sơ thực tế. Chỉ hồ sơ đã được Quản trị viên duyệt mới gắn nhãn "Đã duyệt". Chưa tích hợp cổng thanh toán trực tiếp để bảo vệ người dùng sinh viên.
+              Sinh viên thực hiện: Nguyễn Thị Nhân (23K4080030) & Lê Ánh Diễm Như (23K4080035) • GVHD: ThS. Trần Thái Hòa • Khoa Hệ thống thông tin kinh tế, Trường Đại học Kinh tế, Đại học Huế.
             </div>
           </div>
         </div>
         <div className="shrink-0">
           <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-slate-800 text-emerald-400 border border-emerald-500/20">
-            MVP Status: Sẵn sàng bảo vệ
+            EduMate Huế v2.0
           </span>
         </div>
       </section>

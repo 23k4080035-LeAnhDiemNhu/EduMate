@@ -1,16 +1,42 @@
 // ==============================================================================
-// EDUMATE HUẾ - DANH MỤC 38 HỌC PHẦN ĐẠI HỌC CHUẨN
+// EDUMATE HUẾ - DANH MỤC HỌC PHẦN & KỸ NĂNG THỰC HÀNH CHUẨN
 // Slogan: "Tìm đúng người dạy – Học đúng điều cần."
 // ==============================================================================
 
-export interface CourseSubject {
-  stt: number;
-  code: string;
+import type { ContentGroup, CourseSubject } from '../types';
+
+export { type CourseSubject };
+
+// 3 nhóm nội dung đào tạo chính theo Chương 1 & Chương 4 của PDF Đồ Án
+export const EDUMATE_CONTENT_GROUPS: {
+  id: ContentGroup;
   name: string;
-  category: string;
-  credits: number;
-  description: string;
-}
+  short_desc: string;
+  icon: string;
+  examples: string[];
+}[] = [
+  {
+    id: 'practical_skills',
+    name: 'Kỹ năng thực hành',
+    short_desc: 'Excel, PowerPoint, Canva, Tin học văn phòng & Kỹ năng số ứng dụng',
+    icon: 'Sparkles',
+    examples: ['Excel kinh tế & văn phòng', 'Thiết kế slide PowerPoint', 'Thiết kế Canva', 'Tin học văn phòng MOS', 'Phân tích SPSS / Stata']
+  },
+  {
+    id: 'general_education',
+    name: 'Môn học đại cương',
+    short_desc: 'Củng cố nền tảng, ôn tập đề cương & đề thi các học phần chung',
+    icon: 'BookOpen',
+    examples: ['Triết học Mác - Lênin', 'Kinh tế chính trị', 'Toán ứng dụng', 'Pháp luật đại cương', 'Tiếng Anh chuyên ngành']
+  },
+  {
+    id: 'major_specialization',
+    name: 'Môn học chuyên ngành',
+    short_desc: 'Chuyên môn sâu khối Kinh tế, Kế toán, Tài chính, QTKD & HTTT',
+    icon: 'GraduationCap',
+    examples: ['Nguyên lý kế toán', 'Kinh tế lượng', 'HTTT quản lý', 'Cơ sở dữ liệu nâng cao', 'Quản trị tài chính']
+  }
+];
 
 export const EDUMATE_SUBJECTS: CourseSubject[] = [
   {
@@ -314,12 +340,57 @@ export const EDUMATE_SUBJECTS: CourseSubject[] = [
     code: 'ECO1001',
     name: 'Địa lý kinh tế',
     category: 'Kinh tế, Tài chính & Kế toán',
+    content_group: 'major_specialization',
     credits: 2,
     description: 'Phân bố không gian các ngành kinh tế, vùng kinh tế trọng điểm miền Trung - Huế và kinh tế biển.'
+  },
+  {
+    stt: 39,
+    code: 'SKILL-EXCEL',
+    name: 'Excel Ứng Dụng Trong Kinh Tế & Báo Cáo',
+    category: 'Kỹ năng Thực hành & Tin học',
+    content_group: 'practical_skills',
+    credits: 2,
+    description: 'Hàm xử lý dữ liệu, VLOOKUP, INDEX/MATCH, PivotTable, lập báo cáo phân tích kinh doanh và bảng tính tài chính.'
+  },
+  {
+    stt: 40,
+    code: 'SKILL-PPT',
+    name: 'Thiết Kế Slide PowerPoint Báo Cáo Chuyên Nghiệp',
+    category: 'Kỹ năng Thực hành & Tin học',
+    content_group: 'practical_skills',
+    credits: 2,
+    description: 'Bố cục slide thuyết trình đồ án, trực quan hóa biểu đồ dữ liệu, phối màu và trình bày bài tập lớn chuyên nghiệp.'
+  },
+  {
+    stt: 41,
+    code: 'SKILL-CANVA',
+    name: 'Thiết Kế Đồ Họa Truyền Thông Với Canva',
+    category: 'Kỹ năng Thực hành & Tin học',
+    content_group: 'practical_skills',
+    credits: 2,
+    description: 'Thiết kế ấn phẩm truyền thông học tập, poster nghiên cứu khoa học, infographic số liệu và portfolio cá nhân.'
+  },
+  {
+    stt: 42,
+    code: 'SKILL-MOS',
+    name: 'Tin Học Văn Phòng Chuẩn MOS (Word & Excel)',
+    category: 'Kỹ năng Thực hành & Tin học',
+    content_group: 'practical_skills',
+    credits: 2,
+    description: 'Luyện thi chứng chỉ tin học văn phòng quốc tế MOS, chuẩn hóa văn bản luận văn và đồ án tốt nghiệp.'
   }
 ];
 
 export const SUBJECT_CATEGORIES = [
+  {
+    id: 'cat-00',
+    code: 'PRACTICAL_SKILLS',
+    name: 'Kỹ năng Thực hành & Ứng dụng',
+    icon: 'Sparkles',
+    description: 'Excel kinh tế, Thiết kế slide PowerPoint, Canva truyền thông, Tin học văn phòng MOS...',
+    tutor_count: 15
+  },
   {
     id: 'cat-01',
     code: 'ECON_FIN',

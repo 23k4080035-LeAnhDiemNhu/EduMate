@@ -226,7 +226,7 @@ async function runTests() {
       review_notes: 'Hồ sơ đầy đủ minh chứng hợp lệ.',
     });
     approveSuccess = updated.status === 'approved' && updated.reviewer_id === 'usr-mgr';
-  } catch (e) {
+  } catch {
     approveSuccess = false;
   }
   assert(approveSuccess, 'Ca 10: Người quản lý phê duyệt hồ sơ REQ-SV1-001 thành công kèm ghi chú và lưu vết.');

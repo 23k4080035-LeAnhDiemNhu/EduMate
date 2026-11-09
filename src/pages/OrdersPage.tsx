@@ -93,11 +93,16 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
       </div>
 
       {/* Scope Disclaimer Banner */}
-      <div className="p-4 rounded-2xl glass-panel border border-amber-500/20 bg-amber-950/10 flex items-start space-x-3 text-xs text-amber-200">
-        <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          <strong>Thông báo phạm vi:</strong> Chưa tích hợp cổng thanh toán trực tiếp tự động theo quy định giai đoạn này. Người học thực hiện nộp tiền qua chuyển khoản ngân hàng và nhập mã tham chiếu để Ban Quản lý đối soát thủ công.
-        </p>
+      <div className="p-4 rounded-2xl glass-panel border border-amber-500/30 bg-amber-950/20 flex items-start space-x-3 text-xs text-amber-200">
+        <Info className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-1 leading-relaxed">
+          <p>
+            <strong>Cơ chế thanh toán giai đoạn MVP (Chương 4.4 PDF Đồ án):</strong> Theo định hướng đồ án, hệ thống cổng thanh toán trực tuyến tự động (VNPay/MoMo/Banking Gateway) là tính năng phát triển ở giai đoạn sau.
+          </p>
+          <p className="text-amber-300/80 text-[11px]">
+            Trong giai đoạn hiện tại, nền tảng áp dụng hình thức chuyển khoản ngân hàng trực tiếp. Sau khi gửi mã tham chiếu, giao dịch sẽ ở trạng thái <strong>"Chờ đối soát"</strong> cho đến khi Quản trị viên EduMate xác thực chứng từ hợp lệ.
+          </p>
+        </div>
       </div>
 
       {/* Orders List */}
